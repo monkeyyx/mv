@@ -83,6 +83,7 @@ async function performFetchAndCache(
         raw.map(async (movie) => {
           // Optimize the TMDB poster before searching/caching
           const optimizedPoster = optimizeImage(movie.poster, 400);
+          const base = { ...movie, poster: optimizedPoster };
 
           try {
             // Check granular cache for this specific movie search (to avoid 700ms ShowBox hits)
@@ -91,8 +92,7 @@ async function performFetchAndCache(
             
             if (cachedMatch) {
               return {
-                ...movie,
-                poster: optimizedPoster,
+                ...base,
                 isAvailable: true,
                 showbox_id: cachedMatch.id,
                 box_type: cachedMatch.box_type,
@@ -121,8 +121,7 @@ async function performFetchAndCache(
 
             if (found) {
               const resultData = {
-                ...movie,
-                poster: optimizedPoster,
+                ...base,
                 isAvailable: true,
                 showbox_id: found.id,
                 box_type: found.box_type,
@@ -139,13 +138,17 @@ async function performFetchAndCache(
 
               return resultData;
             }
+
+            // Not found on ShowBox — return movie but mark unavailable
+            return { ...base, isAvailable: false } as Movie;
+
           } catch (e) {
             console.error(`Check failed for ${movie.title}:`, e);
+            return { ...base, isAvailable: false } as Movie;
           }
-          return null;
         }),
       )
-    ).filter((m): m is Movie => m !== null);
+    );
 
     const response = { page, total: results.length, results };
 
