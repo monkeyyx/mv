@@ -3,6 +3,7 @@ import type { Bindings, Variables } from "../types";
 import { TMDBService } from "../../core/services/TMDBService";
 import { ShowboxService } from "../../core/services/ShowboxService";
 import type { Movie } from "../../core/types";
+import { optimizeImage } from "../../core/utils/images";
 
 const discover = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 const tmdb = new TMDBService();
@@ -80,6 +81,9 @@ async function performFetchAndCache(
     const results = (
       await Promise.all(
         raw.map(async (movie) => {
+          // Optimize the TMDB poster before searching/caching
+          const optimizedPoster = optimizeImage(movie.poster, 400);
+
           try {
             // Check granular cache for this specific movie search (to avoid 700ms ShowBox hits)
             const movieSearchKey = `sb:search:${movie.title.toLowerCase().replace(/[^a-z0-9]/g, "")}:${movie.year}`;
@@ -88,6 +92,7 @@ async function performFetchAndCache(
             if (cachedMatch) {
               return {
                 ...movie,
+                poster: optimizedPoster,
                 isAvailable: true,
                 showbox_id: cachedMatch.id,
                 box_type: cachedMatch.box_type,
@@ -117,6 +122,7 @@ async function performFetchAndCache(
             if (found) {
               const resultData = {
                 ...movie,
+                poster: optimizedPoster,
                 isAvailable: true,
                 showbox_id: found.id,
                 box_type: found.box_type,
