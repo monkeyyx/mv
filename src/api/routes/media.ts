@@ -28,68 +28,81 @@ media.get("/search", async (c) => {
   return c.json(results);
 });
 
+import { requestManager } from "../../core/utils/RequestManager";
+
 media.get("/movie/:id", async (c) => {
   const id = c.req.param("id");
   const cache = c.var.cache;
   const cacheKey = `media:movie:${id}`;
 
   // 1. Check Cache
-  const cached = await cache.get<Movie>(cacheKey);
-  if (cached) return c.json(cached);
-
-  const details = await showbox.getMovieDetails(id);
-  if (!details) return c.json({ error: "Movie not found" }, 404);
-
-  const mutableDetails = JSON.parse(JSON.stringify(details)) as Movie & {
-    stream_sources: StreamSource[];
-    hls_url?: string;
-  };
-  mutableDetails.stream_sources = [];
-  mutableDetails.isAvailable = false;
-
-  try {
-    const febBoxId = await showbox.getFebBoxId(id, "1");
-    if (febBoxId) {
-      mutableDetails.isAvailable = true;
-      const files = await febbox.getFileList(febBoxId);
-      const videoFiles = files.filter(
-        (f) =>
-          !f.is_dir &&
-          (f.name.endsWith(".mp4") ||
-            f.name.endsWith(".mkv") ||
-            f.name.endsWith(".avi")),
-      );
-
-      if (videoFiles.length > 0) {
-        let foundHls = false;
-        for (const file of videoFiles) {
-          if (foundHls) break;
-          const rawLinks = await febbox.getLinks(file.id, febBoxId);
-          const hlsLinks = rawLinks.filter((l) => l.url.includes(".m3u8"));
-          const orgLinks = rawLinks.filter((l) => !l.url.includes(".m3u8"));
-
-          if (hlsLinks.length > 0) {
-            foundHls = true;
-            mutableDetails.stream_sources = [...hlsLinks, ...orgLinks];
-            mutableDetails.hls_url = `/api/media/stream/${id}`;
-          }
-        }
-
-        if (!foundHls) {
-          const firstFile = videoFiles[0];
-          const rawLinks = await febbox.getLinks(firstFile.id, febBoxId);
-          mutableDetails.stream_sources = rawLinks;
-        }
-      }
-    }
-  } catch (e: unknown) {
-    console.error("Resolution failed:", (e as Error).message);
+  const { value: cached, isStale } = await cache.getWithMetadata<Movie>(cacheKey);
+  if (cached) {
+    c.header("X-Cache", isStale ? "STALE" : "HIT");
+    // Background refresh omitted here for simplicity, but could be added like discover.ts
+    return c.json(cached);
   }
 
-  // 2. Store in Cache (1 hour)
-  await cache.set(cacheKey, mutableDetails, 3600);
+  c.header("X-Cache", "MISS");
 
-  return c.json(mutableDetails);
+  // Use RequestManager to prevent double-fetches
+  const result = await requestManager.run(cacheKey, async () => {
+    const details = await showbox.getMovieDetails(id);
+    if (!details) return null;
+
+    const mutableDetails = JSON.parse(JSON.stringify(details)) as Movie & {
+      stream_sources: StreamSource[];
+      hls_url?: string;
+    };
+    mutableDetails.stream_sources = [];
+    mutableDetails.isAvailable = false;
+
+    try {
+      const febBoxId = await showbox.getFebBoxId(id, "1");
+      if (febBoxId) {
+        mutableDetails.isAvailable = true;
+        const files = await febbox.getFileList(febBoxId);
+        const videoFiles = files.filter(
+          (f) =>
+            !f.is_dir &&
+            (f.name.endsWith(".mp4") ||
+              f.name.endsWith(".mkv") ||
+              f.name.endsWith(".avi")),
+        );
+
+        if (videoFiles.length > 0) {
+          let foundHls = false;
+          for (const file of videoFiles) {
+            if (foundHls) break;
+            const rawLinks = await febbox.getLinks(file.id, febBoxId);
+            const hlsLinks = rawLinks.filter((l) => l.url.includes(".m3u8"));
+            const orgLinks = rawLinks.filter((l) => !l.url.includes(".m3u8"));
+
+            if (hlsLinks.length > 0) {
+              foundHls = true;
+              mutableDetails.stream_sources = [...hlsLinks, ...orgLinks];
+              mutableDetails.hls_url = `/api/media/stream/${id}`;
+            }
+          }
+
+          if (!foundHls) {
+            const firstFile = videoFiles[0];
+            const rawLinks = await febbox.getLinks(firstFile.id, febBoxId);
+            mutableDetails.stream_sources = rawLinks;
+          }
+        }
+      }
+    } catch (e: unknown) {
+      console.error("Resolution failed:", (e as Error).message);
+    }
+
+    // Store in Cache (1 hour fresh, 24 hours SWR)
+    await cache.set(cacheKey, mutableDetails, 3600, 86400);
+    return mutableDetails;
+  });
+
+  if (!result) return c.json({ error: "Movie not found" }, 404);
+  return c.json(result);
 });
 
 // --- HLS Proxy ---
@@ -98,59 +111,78 @@ media.get("/movie/:id", async (c) => {
 // This proxy forwards the request from the same server IP that generated the token.
 media.get('/stream/:id', async (c) => {
   const id = c.req.param('id');
-
   const cache = c.var.cache;
   const cacheKey = `media:stream_url:${id}`;
+  const playlistCacheKey = `media:playlist:${id}`;
 
-  // 1. Resolve stream URL (Check Cache First)
+  // 1. Check if we have a cached rewritten playlist (Fast Path)
+  const cachedPlaylist = await cache.get<string>(playlistCacheKey);
+  if (cachedPlaylist) {
+    c.header("X-Cache", "HIT");
+    return new Response(cachedPlaylist, {
+      headers: {
+        'Content-Type': 'application/vnd.apple.mpegurl',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+  }
+
+  // 2. Resolve stream URL (Check Cache First)
   let hlsUrl = await cache.get<string>(cacheKey) || '';
 
   if (!hlsUrl) {
     try {
-      const febBoxId = await showbox.getFebBoxId(id, '1');
-      if (febBoxId) {
-        const files = await febbox.getFileList(febBoxId);
-        const videoFiles = files.filter(f => !f.is_dir);
-        for (const file of videoFiles) {
-          const rawLinks = await febbox.getLinks(file.id, febBoxId);
-          const hlsLink = rawLinks.find(l => l.url.includes('.m3u8'));
-          if (hlsLink) {
-            hlsUrl = hlsLink.url;
-            // Store in cache for 6 hours (tokens last a while, but not forever)
-            await cache.set(cacheKey, hlsUrl, 21600);
-            break;
+      const result = await requestManager.run(cacheKey, async () => {
+        const febBoxId = await showbox.getFebBoxId(id, '1');
+        if (febBoxId) {
+          const files = await febbox.getFileList(febBoxId);
+          const videoFiles = files.filter(f => !f.is_dir);
+          for (const file of videoFiles) {
+            const rawLinks = await febbox.getLinks(file.id, febBoxId);
+            const hlsLink = rawLinks.find(l => l.url.includes('.m3u8'));
+            if (hlsLink) {
+              return hlsLink.url;
+            }
           }
         }
+        return null;
+      });
+      if (result) {
+        hlsUrl = result;
+        await cache.set(cacheKey, hlsUrl, 21600); // 6 hours
       }
     } catch (e) {}
   }
 
   if (!hlsUrl) return c.json({ error: 'No stream found' }, 404);
 
-  // Fetch the .m3u8 playlist from the server (same IP that signed the token)
-  const upstream = await fetch(hlsUrl, {
-    headers: { 'User-Agent': 'Mozilla/5.0', 'Referer': 'https://www.febbox.com/' },
+  // 3. Fetch and Rewrite (Coalesced)
+  c.header("X-Cache", "MISS");
+  const rewritten = await requestManager.run(`rewrite:${id}`, async () => {
+    const upstream = await fetch(hlsUrl, {
+      headers: { 'User-Agent': 'Mozilla/5.0', 'Referer': 'https://www.febbox.com/' },
+    });
+
+    if (!upstream.ok) return null;
+
+    const playlist = await upstream.text();
+    const baseUrl = new URL(hlsUrl);
+    const segmentBase = `${baseUrl.protocol}//${baseUrl.host}${baseUrl.pathname.substring(0, baseUrl.pathname.lastIndexOf('/') + 1)}`;
+
+    const content = playlist.split('\n').map(line => {
+      if (line.startsWith('#') || line.trim() === '') return line;
+      if (line.startsWith('http')) {
+        return `/api/media/segment?url=${encodeURIComponent(line.trim())}`;
+      }
+      return `/api/media/segment?url=${encodeURIComponent(segmentBase + line.trim())}`;
+    }).join('\n');
+
+    // Cache rewritten playlist for 10 minutes
+    await cache.set(playlistCacheKey, content, 600);
+    return content;
   });
 
-  if (!upstream.ok) {
-    return c.json({ error: `Upstream error: ${upstream.status}` }, 502);
-  }
-
-  const playlist = await upstream.text();
-
-  // Rewrite segment URLs in the playlist to go through our proxy
-  const baseUrl = new URL(hlsUrl);
-  const segmentBase = `${baseUrl.protocol}//${baseUrl.host}${baseUrl.pathname.substring(0, baseUrl.pathname.lastIndexOf('/') + 1)}`;
-
-  const rewritten = playlist.split('\n').map(line => {
-    if (line.startsWith('#') || line.trim() === '') return line;
-    // Absolute URL segments
-    if (line.startsWith('http')) {
-      return `/api/media/segment?url=${encodeURIComponent(line.trim())}`;
-    }
-    // Relative URL segments — resolve against base
-    return `/api/media/segment?url=${encodeURIComponent(segmentBase + line.trim())}`;
-  }).join('\n');
+  if (!rewritten) return c.json({ error: 'Upstream error' }, 502);
 
   return new Response(rewritten, {
     headers: {
@@ -232,14 +264,23 @@ media.get("/show/:id", async (c) => {
   const cache = c.var.cache;
   const cacheKey = `media:show:${id}`;
 
-  const cached = await cache.get(cacheKey);
-  if (cached) return c.json(cached);
+  const { value: cached, isStale } = await cache.getWithMetadata(cacheKey);
+  if (cached) {
+    c.header("X-Cache", isStale ? "STALE" : "HIT");
+    return c.json(cached);
+  }
 
-  const details = await showbox.getShowDetails(id);
-  if (!details) return c.json({ error: "Show not found" }, 404);
+  c.header("X-Cache", "MISS");
 
-  await cache.set(cacheKey, details, 3600);
-  return c.json(details);
+  const result = await requestManager.run(cacheKey, async () => {
+    const details = await showbox.getShowDetails(id);
+    if (!details) return null;
+    await cache.set(cacheKey, details, 3600, 86400);
+    return details;
+  });
+
+  if (!result) return c.json({ error: "Show not found" }, 404);
+  return c.json(result);
 });
 
 export default media;

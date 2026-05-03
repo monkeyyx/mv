@@ -40061,6 +40061,29 @@ var FebBoxService = class {
   }
 };
 
+// src/core/utils/RequestManager.ts
+init_checked_fetch();
+init_modules_watch_stub();
+var RequestManager = class {
+  static {
+    __name(this, "RequestManager");
+  }
+  inFlight = /* @__PURE__ */ new Map();
+  async run(key, fn) {
+    const existing = this.inFlight.get(key);
+    if (existing) {
+      console.log(`[RequestManager] Coalescing request for: ${key}`);
+      return existing;
+    }
+    const promise2 = fn().finally(() => {
+      this.inFlight.delete(key);
+    });
+    this.inFlight.set(key, promise2);
+    return promise2;
+  }
+};
+var requestManager = new RequestManager();
+
 // src/api/routes/media.ts
 var media = new Hono2();
 var showbox = new ShowboxService();
@@ -40086,88 +40109,116 @@ media.get("/movie/:id", async (c) => {
   const id = c.req.param("id");
   const cache = c.var.cache;
   const cacheKey = `media:movie:${id}`;
-  const cached2 = await cache.get(cacheKey);
-  if (cached2) return c.json(cached2);
-  const details = await showbox.getMovieDetails(id);
-  if (!details) return c.json({ error: "Movie not found" }, 404);
-  const mutableDetails = JSON.parse(JSON.stringify(details));
-  mutableDetails.stream_sources = [];
-  mutableDetails.isAvailable = false;
-  try {
-    const febBoxId = await showbox.getFebBoxId(id, "1");
-    if (febBoxId) {
-      mutableDetails.isAvailable = true;
-      const files = await febbox.getFileList(febBoxId);
-      const videoFiles = files.filter(
-        (f) => !f.is_dir && (f.name.endsWith(".mp4") || f.name.endsWith(".mkv") || f.name.endsWith(".avi"))
-      );
-      if (videoFiles.length > 0) {
-        let foundHls = false;
-        for (const file2 of videoFiles) {
-          if (foundHls) break;
-          const rawLinks = await febbox.getLinks(file2.id, febBoxId);
-          const hlsLinks = rawLinks.filter((l) => l.url.includes(".m3u8"));
-          const orgLinks = rawLinks.filter((l) => !l.url.includes(".m3u8"));
-          if (hlsLinks.length > 0) {
-            foundHls = true;
-            mutableDetails.stream_sources = [...hlsLinks, ...orgLinks];
-            mutableDetails.hls_url = `/api/media/stream/${id}`;
+  const { value: cached2, isStale } = await cache.getWithMetadata(cacheKey);
+  if (cached2) {
+    c.header("X-Cache", isStale ? "STALE" : "HIT");
+    return c.json(cached2);
+  }
+  c.header("X-Cache", "MISS");
+  const result = await requestManager.run(cacheKey, async () => {
+    const details = await showbox.getMovieDetails(id);
+    if (!details) return null;
+    const mutableDetails = JSON.parse(JSON.stringify(details));
+    mutableDetails.stream_sources = [];
+    mutableDetails.isAvailable = false;
+    try {
+      const febBoxId = await showbox.getFebBoxId(id, "1");
+      if (febBoxId) {
+        mutableDetails.isAvailable = true;
+        const files = await febbox.getFileList(febBoxId);
+        const videoFiles = files.filter(
+          (f) => !f.is_dir && (f.name.endsWith(".mp4") || f.name.endsWith(".mkv") || f.name.endsWith(".avi"))
+        );
+        if (videoFiles.length > 0) {
+          let foundHls = false;
+          for (const file2 of videoFiles) {
+            if (foundHls) break;
+            const rawLinks = await febbox.getLinks(file2.id, febBoxId);
+            const hlsLinks = rawLinks.filter((l) => l.url.includes(".m3u8"));
+            const orgLinks = rawLinks.filter((l) => !l.url.includes(".m3u8"));
+            if (hlsLinks.length > 0) {
+              foundHls = true;
+              mutableDetails.stream_sources = [...hlsLinks, ...orgLinks];
+              mutableDetails.hls_url = `/api/media/stream/${id}`;
+            }
+          }
+          if (!foundHls) {
+            const firstFile = videoFiles[0];
+            const rawLinks = await febbox.getLinks(firstFile.id, febBoxId);
+            mutableDetails.stream_sources = rawLinks;
           }
         }
-        if (!foundHls) {
-          const firstFile = videoFiles[0];
-          const rawLinks = await febbox.getLinks(firstFile.id, febBoxId);
-          mutableDetails.stream_sources = rawLinks;
-        }
       }
+    } catch (e) {
+      console.error("Resolution failed:", e.message);
     }
-  } catch (e) {
-    console.error("Resolution failed:", e.message);
-  }
-  await cache.set(cacheKey, mutableDetails, 3600);
-  return c.json(mutableDetails);
+    await cache.set(cacheKey, mutableDetails, 3600, 86400);
+    return mutableDetails;
+  });
+  if (!result) return c.json({ error: "Movie not found" }, 404);
+  return c.json(result);
 });
 media.get("/stream/:id", async (c) => {
   const id = c.req.param("id");
   const cache = c.var.cache;
   const cacheKey = `media:stream_url:${id}`;
+  const playlistCacheKey = `media:playlist:${id}`;
+  const cachedPlaylist = await cache.get(playlistCacheKey);
+  if (cachedPlaylist) {
+    c.header("X-Cache", "HIT");
+    return new Response(cachedPlaylist, {
+      headers: {
+        "Content-Type": "application/vnd.apple.mpegurl",
+        "Access-Control-Allow-Origin": "*"
+      }
+    });
+  }
   let hlsUrl = await cache.get(cacheKey) || "";
   if (!hlsUrl) {
     try {
-      const febBoxId = await showbox.getFebBoxId(id, "1");
-      if (febBoxId) {
-        const files = await febbox.getFileList(febBoxId);
-        const videoFiles = files.filter((f) => !f.is_dir);
-        for (const file2 of videoFiles) {
-          const rawLinks = await febbox.getLinks(file2.id, febBoxId);
-          const hlsLink = rawLinks.find((l) => l.url.includes(".m3u8"));
-          if (hlsLink) {
-            hlsUrl = hlsLink.url;
-            await cache.set(cacheKey, hlsUrl, 21600);
-            break;
+      const result = await requestManager.run(cacheKey, async () => {
+        const febBoxId = await showbox.getFebBoxId(id, "1");
+        if (febBoxId) {
+          const files = await febbox.getFileList(febBoxId);
+          const videoFiles = files.filter((f) => !f.is_dir);
+          for (const file2 of videoFiles) {
+            const rawLinks = await febbox.getLinks(file2.id, febBoxId);
+            const hlsLink = rawLinks.find((l) => l.url.includes(".m3u8"));
+            if (hlsLink) {
+              return hlsLink.url;
+            }
           }
         }
+        return null;
+      });
+      if (result) {
+        hlsUrl = result;
+        await cache.set(cacheKey, hlsUrl, 21600);
       }
     } catch (e) {
     }
   }
   if (!hlsUrl) return c.json({ error: "No stream found" }, 404);
-  const upstream = await fetch(hlsUrl, {
-    headers: { "User-Agent": "Mozilla/5.0", "Referer": "https://www.febbox.com/" }
+  c.header("X-Cache", "MISS");
+  const rewritten = await requestManager.run(`rewrite:${id}`, async () => {
+    const upstream = await fetch(hlsUrl, {
+      headers: { "User-Agent": "Mozilla/5.0", "Referer": "https://www.febbox.com/" }
+    });
+    if (!upstream.ok) return null;
+    const playlist = await upstream.text();
+    const baseUrl = new URL(hlsUrl);
+    const segmentBase = `${baseUrl.protocol}//${baseUrl.host}${baseUrl.pathname.substring(0, baseUrl.pathname.lastIndexOf("/") + 1)}`;
+    const content = playlist.split("\n").map((line) => {
+      if (line.startsWith("#") || line.trim() === "") return line;
+      if (line.startsWith("http")) {
+        return `/api/media/segment?url=${encodeURIComponent(line.trim())}`;
+      }
+      return `/api/media/segment?url=${encodeURIComponent(segmentBase + line.trim())}`;
+    }).join("\n");
+    await cache.set(playlistCacheKey, content, 600);
+    return content;
   });
-  if (!upstream.ok) {
-    return c.json({ error: `Upstream error: ${upstream.status}` }, 502);
-  }
-  const playlist = await upstream.text();
-  const baseUrl = new URL(hlsUrl);
-  const segmentBase = `${baseUrl.protocol}//${baseUrl.host}${baseUrl.pathname.substring(0, baseUrl.pathname.lastIndexOf("/") + 1)}`;
-  const rewritten = playlist.split("\n").map((line) => {
-    if (line.startsWith("#") || line.trim() === "") return line;
-    if (line.startsWith("http")) {
-      return `/api/media/segment?url=${encodeURIComponent(line.trim())}`;
-    }
-    return `/api/media/segment?url=${encodeURIComponent(segmentBase + line.trim())}`;
-  }).join("\n");
+  if (!rewritten) return c.json({ error: "Upstream error" }, 502);
   return new Response(rewritten, {
     headers: {
       "Content-Type": "application/vnd.apple.mpegurl",
@@ -40236,12 +40287,20 @@ media.get("/show/:id", async (c) => {
   const id = c.req.param("id");
   const cache = c.var.cache;
   const cacheKey = `media:show:${id}`;
-  const cached2 = await cache.get(cacheKey);
-  if (cached2) return c.json(cached2);
-  const details = await showbox.getShowDetails(id);
-  if (!details) return c.json({ error: "Show not found" }, 404);
-  await cache.set(cacheKey, details, 3600);
-  return c.json(details);
+  const { value: cached2, isStale } = await cache.getWithMetadata(cacheKey);
+  if (cached2) {
+    c.header("X-Cache", isStale ? "STALE" : "HIT");
+    return c.json(cached2);
+  }
+  c.header("X-Cache", "MISS");
+  const result = await requestManager.run(cacheKey, async () => {
+    const details = await showbox.getShowDetails(id);
+    if (!details) return null;
+    await cache.set(cacheKey, details, 3600, 86400);
+    return details;
+  });
+  if (!result) return c.json({ error: "Show not found" }, 404);
+  return c.json(result);
 });
 var media_default = media;
 
@@ -40440,50 +40499,73 @@ discover.use("*", async (c, next2) => {
 async function filterAvailable(c, fetcher, page, cacheKey) {
   const cache = c.var.cache;
   const fullCacheKey = `discover:${cacheKey}:${page}`;
-  const cached2 = await cache.get(fullCacheKey);
+  const { value: cached2, isStale } = await cache.getWithMetadata(fullCacheKey);
   if (cached2) {
-    console.log(`[Discover] Cache Hit: ${fullCacheKey}`);
+    c.header("X-Cache", isStale ? "STALE" : "HIT");
+    if (isStale) {
+      const refreshTask = /* @__PURE__ */ __name(async () => {
+        try {
+          console.log(`[Discover] SWR Refreshing: ${fullCacheKey}`);
+          await performFetchAndCache(c, fetcher, page, fullCacheKey);
+        } catch (e) {
+          console.error(`[Discover] Background Refresh Failed for ${fullCacheKey}:`, e);
+        }
+      }, "refreshTask");
+      if (c.executionCtx && c.executionCtx.waitUntil) {
+        c.executionCtx.waitUntil(refreshTask());
+      } else {
+        refreshTask();
+      }
+    }
     return cached2;
   }
-  console.log(`[Discover] Cache Miss: ${fullCacheKey}. Fetching...`);
-  const raw2 = await fetcher(page);
-  const results = (await Promise.all(
-    raw2.map(async (movie) => {
-      try {
-        const searchResults = await showbox2.search(
-          movie.title,
-          "all",
-          movie.year?.toString()
-        );
-        const found = searchResults.find((result) => {
-          const a = movie.title.toLowerCase().replace(/[^a-z0-9]/g, "");
-          const b = result.title.toLowerCase().replace(/[^a-z0-9]/g, "");
-          const match2 = b.includes(a) || a.includes(b);
-          return match2 && (!movie.year || Math.abs(
-            parseInt(result.year || "0") - parseInt(movie.year || "0")
-          ) <= 1);
-        });
-        if (found) {
-          return {
-            ...movie,
-            isAvailable: true,
-            showbox_id: found.id,
-            box_type: found.box_type,
-            stream_url: `/api/media/stream/${found.id}`,
-            play_url: `/api/media/play/${found.id}`
-          };
-        }
-      } catch (e) {
-        console.error(`Check failed for ${movie.title}:`, e);
-      }
-      return null;
-    })
-  )).filter((m) => m !== null);
-  const response = { page, total: results.length, results };
-  await cache.set(fullCacheKey, response, 3600);
-  return response;
+  c.header("X-Cache", "MISS");
+  return performFetchAndCache(c, fetcher, page, fullCacheKey);
 }
 __name(filterAvailable, "filterAvailable");
+async function performFetchAndCache(c, fetcher, page, fullCacheKey) {
+  const cache = c.var.cache;
+  return requestManager.run(fullCacheKey, async () => {
+    console.log(`[Discover] Fetching Fresh Data: ${fullCacheKey}`);
+    const raw2 = await fetcher(page);
+    const results = (await Promise.all(
+      raw2.map(async (movie) => {
+        try {
+          const searchResults = await showbox2.search(
+            movie.title,
+            "all",
+            movie.year?.toString()
+          );
+          const found = searchResults.find((result) => {
+            const a = movie.title.toLowerCase().replace(/[^a-z0-9]/g, "");
+            const b = result.title.toLowerCase().replace(/[^a-z0-9]/g, "");
+            const match2 = b.includes(a) || a.includes(b);
+            return match2 && (!movie.year || Math.abs(
+              parseInt(result.year || "0") - parseInt(movie.year || "0")
+            ) <= 1);
+          });
+          if (found) {
+            return {
+              ...movie,
+              isAvailable: true,
+              showbox_id: found.id,
+              box_type: found.box_type,
+              stream_url: `/api/media/stream/${found.id}`,
+              play_url: `/api/media/play/${found.id}`
+            };
+          }
+        } catch (e) {
+          console.error(`Check failed for ${movie.title}:`, e);
+        }
+        return null;
+      })
+    )).filter((m) => m !== null);
+    const response = { page, total: results.length, results };
+    await cache.set(fullCacheKey, response, 3600, 86400);
+    return response;
+  });
+}
+__name(performFetchAndCache, "performFetchAndCache");
 discover.get("/movies/popular", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
   return c.json(await filterAvailable(c, tmdb.getPopularMovies.bind(tmdb), page, "movies:popular"));
@@ -40616,39 +40698,65 @@ var CacheService = class {
   constructor(kvNamespace) {
     this.kv = kvNamespace;
   }
-  async get(key) {
+  /**
+   * getWithMetadata returns the value and whether it is technically expired 
+   * but still within the SWR window.
+   */
+  async getWithMetadata(key) {
+    const cached2 = this.localCache.get(key);
+    if (cached2) {
+      const now = Date.now();
+      if (now < cached2.expires) {
+        return { value: cached2.value, isStale: false };
+      }
+      if (now < cached2.swrExpires) {
+        return { value: cached2.value, isStale: true };
+      }
+      this.localCache.delete(key);
+    }
     if (this.kv) {
       try {
-        const val2 = await this.kv.get(key, "json");
-        if (val2) return val2;
+        const { value, metadata } = await this.kv.getWithMetadata(key, "json");
+        if (value) {
+          const now = Date.now();
+          const meta3 = metadata || { expires: 0, swrExpires: 0 };
+          this.localCache.set(key, {
+            value,
+            expires: meta3.expires,
+            swrExpires: meta3.swrExpires
+          });
+          if (now < meta3.expires) {
+            return { value, isStale: false };
+          }
+          if (now < meta3.swrExpires) {
+            return { value, isStale: true };
+          }
+        }
       } catch (e) {
         console.error(`[CacheService] KV Get Error for ${key}:`, e);
       }
     }
-    const cached2 = this.localCache.get(key);
-    if (cached2) {
-      if (Date.now() < cached2.expires) {
-        return cached2.value;
-      }
-      this.localCache.delete(key);
-    }
-    return null;
+    return { value: null, isStale: false };
   }
-  async set(key, value, ttlSeconds = 3600) {
+  async get(key) {
+    const { value } = await this.getWithMetadata(key);
+    return value;
+  }
+  async set(key, value, ttlSeconds = 3600, swrSeconds = 86400) {
+    const now = Date.now();
+    const expires = now + ttlSeconds * 1e3;
+    const swrExpires = now + (ttlSeconds + swrSeconds) * 1e3;
     if (this.kv) {
       try {
         await this.kv.put(key, JSON.stringify(value), {
-          expirationTtl: Math.max(60, ttlSeconds)
-          // KV minimum is 60s
+          expirationTtl: Math.max(60, ttlSeconds + swrSeconds),
+          metadata: { expires, swrExpires }
         });
       } catch (e) {
         console.error(`[CacheService] KV Set Error for ${key}:`, e);
       }
     }
-    this.localCache.set(key, {
-      value,
-      expires: Date.now() + ttlSeconds * 1e3
-    });
+    this.localCache.set(key, { value, expires, swrExpires });
   }
   async delete(key) {
     if (this.kv) {

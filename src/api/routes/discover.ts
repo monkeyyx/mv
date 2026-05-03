@@ -16,6 +16,8 @@ discover.use("*", async (c, next) => {
 // ---------------------------------------------------------------------------
 // Core: fetch TMDB list → cross-check ShowBox availability → return only matches
 // ---------------------------------------------------------------------------
+import { requestManager } from "../../core/utils/RequestManager";
+
 async function filterAvailable(
   c: any,
   fetcher: (page: number) => Promise<Movie[]>,
@@ -25,63 +27,103 @@ async function filterAvailable(
   const cache = c.var.cache;
   const fullCacheKey = `discover:${cacheKey}:${page}`;
 
-  // 1. Check Cache
-  const cached = await cache.get(fullCacheKey);
+  // 1. Get from Cache (with SWR support)
+  const { value: cached, isStale } = await cache.getWithMetadata(fullCacheKey);
+
+  // If we have a cached value, we decide how to handle it
   if (cached) {
-    console.log(`[Discover] Cache Hit: ${fullCacheKey}`);
+    c.header("X-Cache", isStale ? "STALE" : "HIT");
+
+    // If it's stale, trigger a background refresh (Cloudflare Workers ctx.waitUntil)
+    if (isStale) {
+      const refreshTask = async () => {
+        try {
+          console.log(`[Discover] SWR Refreshing: ${fullCacheKey}`);
+          await performFetchAndCache(c, fetcher, page, fullCacheKey);
+        } catch (e) {
+          console.error(`[Discover] Background Refresh Failed for ${fullCacheKey}:`, e);
+        }
+      };
+
+      if (c.executionCtx && c.executionCtx.waitUntil) {
+        c.executionCtx.waitUntil(refreshTask());
+      } else {
+        // Fallback for local development (run async but don't wait)
+        refreshTask();
+      }
+    }
+
     return cached as any;
   }
 
-  console.log(`[Discover] Cache Miss: ${fullCacheKey}. Fetching...`);
-  const raw = await fetcher(page);
+  // 2. Cache Miss: Perform full fetch and store
+  c.header("X-Cache", "MISS");
+  return performFetchAndCache(c, fetcher, page, fullCacheKey);
+}
 
-  // 2. Parallel ShowBox Availability Checks
-  const results = (
-    await Promise.all(
-      raw.map(async (movie) => {
-        try {
-          const searchResults = await showbox.search(
-            movie.title,
-            "all",
-            movie.year?.toString(),
-          );
-          const found = searchResults.find((result) => {
-            const a = movie.title.toLowerCase().replace(/[^a-z0-9]/g, "");
-            const b = result.title.toLowerCase().replace(/[^a-z0-9]/g, "");
-            const match = b.includes(a) || a.includes(b);
-            return (
-              match &&
-              (!movie.year ||
-                Math.abs(
-                  parseInt(result.year || "0") - parseInt(movie.year || "0"),
-                ) <= 1)
+/**
+ * Shared logic for performing the actual fetch and cross-checking, 
+ * wrapped in RequestManager to avoid duplicate fetches.
+ */
+async function performFetchAndCache(
+  c: any,
+  fetcher: (page: number) => Promise<Movie[]>,
+  page: number,
+  fullCacheKey: string,
+): Promise<any> {
+  const cache = c.var.cache;
+
+  return requestManager.run(fullCacheKey, async () => {
+    console.log(`[Discover] Fetching Fresh Data: ${fullCacheKey}`);
+    const raw = await fetcher(page);
+
+    const results = (
+      await Promise.all(
+        raw.map(async (movie) => {
+          try {
+            const searchResults = await showbox.search(
+              movie.title,
+              "all",
+              movie.year?.toString(),
             );
-          });
+            const found = searchResults.find((result) => {
+              const a = movie.title.toLowerCase().replace(/[^a-z0-9]/g, "");
+              const b = result.title.toLowerCase().replace(/[^a-z0-9]/g, "");
+              const match = b.includes(a) || a.includes(b);
+              return (
+                match &&
+                (!movie.year ||
+                  Math.abs(
+                    parseInt(result.year || "0") - parseInt(movie.year || "0"),
+                  ) <= 1)
+              );
+            });
 
-          if (found) {
-            return {
-              ...movie,
-              isAvailable: true,
-              showbox_id: found.id,
-              box_type: found.box_type,
-              stream_url: `/api/media/stream/${found.id}`,
-              play_url: `/api/media/play/${found.id}`,
-            } as Movie;
+            if (found) {
+              return {
+                ...movie,
+                isAvailable: true,
+                showbox_id: found.id,
+                box_type: found.box_type,
+                stream_url: `/api/media/stream/${found.id}`,
+                play_url: `/api/media/play/${found.id}`,
+              } as Movie;
+            }
+          } catch (e) {
+            console.error(`Check failed for ${movie.title}:`, e);
           }
-        } catch (e) {
-          console.error(`Check failed for ${movie.title}:`, e);
-        }
-        return null;
-      }),
-    )
-  ).filter((m): m is Movie => m !== null);
+          return null;
+        }),
+      )
+    ).filter((m): m is Movie => m !== null);
 
-  const response = { page, total: results.length, results };
+    const response = { page, total: results.length, results };
 
-  // 3. Store in Cache (1 hour)
-  await cache.set(fullCacheKey, response, 3600);
+    // Store in Cache: 1 hour fresh, 24 hours SWR window
+    await cache.set(fullCacheKey, response, 3600, 86400);
 
-  return response;
+    return response;
+  });
 }
 
 // ---------------------------------------------------------------------------
