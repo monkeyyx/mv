@@ -69,6 +69,14 @@ describe("🔥 MyFlixi API — Comprehensive End-to-End Test", () => {
       console.log(`[Test] Sample Popular Movie: ${movie.title}`);
       expect(movie.isAvailable).toBe(true);
       expect(movie.stream_url).toContain("/api/media/stream/");
+
+      console.log("[Test] Making second request to verify cache hit...");
+      const start = Date.now();
+      const res2 = await app.request("/api/discover/movies/popular");
+      const duration = Date.now() - start;
+      expect(res2.status).toBe(200);
+      console.log(`[Test] Second request duration: ${duration}ms`);
+      expect(duration).toBeLessThan(100); // Should be very fast
     }, 15000); // Higher timeout for heavy ShowBox cross-checks
 
     it("should fetch Japanese Anime and verify it's correctly tagged", async () => {

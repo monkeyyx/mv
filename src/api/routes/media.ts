@@ -30,10 +30,16 @@ media.get("/search", async (c) => {
 
 media.get("/movie/:id", async (c) => {
   const id = c.req.param("id");
+  const cache = c.var.cache;
+  const cacheKey = `media:movie:${id}`;
+
+  // 1. Check Cache
+  const cached = await cache.get<Movie>(cacheKey);
+  if (cached) return c.json(cached);
+
   const details = await showbox.getMovieDetails(id);
   if (!details) return c.json({ error: "Movie not found" }, 404);
 
-  // Modular Hono logic for stream resolution
   const mutableDetails = JSON.parse(JSON.stringify(details)) as Movie & {
     stream_sources: StreamSource[];
     hls_url?: string;
@@ -65,7 +71,6 @@ media.get("/movie/:id", async (c) => {
           if (hlsLinks.length > 0) {
             foundHls = true;
             mutableDetails.stream_sources = [...hlsLinks, ...orgLinks];
-            // Provide the working proxy URL as the primary hls_url
             mutableDetails.hls_url = `/api/media/stream/${id}`;
           }
         }
@@ -81,6 +86,9 @@ media.get("/movie/:id", async (c) => {
     console.error("Resolution failed:", (e as Error).message);
   }
 
+  // 2. Store in Cache (1 hour)
+  await cache.set(cacheKey, mutableDetails, 3600);
+
   return c.json(mutableDetails);
 });
 
@@ -91,20 +99,31 @@ media.get("/movie/:id", async (c) => {
 media.get('/stream/:id', async (c) => {
   const id = c.req.param('id');
 
-  // Resolve stream URL
-  let hlsUrl = '';
-  try {
-    const febBoxId = await showbox.getFebBoxId(id, '1');
-    if (febBoxId) {
-      const files = await febbox.getFileList(febBoxId);
-      const videoFiles = files.filter(f => !f.is_dir);
-      for (const file of videoFiles) {
-        const rawLinks = await febbox.getLinks(file.id, febBoxId);
-        const hlsLink = rawLinks.find(l => l.url.includes('.m3u8'));
-        if (hlsLink) { hlsUrl = hlsLink.url; break; }
+  const cache = c.var.cache;
+  const cacheKey = `media:stream_url:${id}`;
+
+  // 1. Resolve stream URL (Check Cache First)
+  let hlsUrl = await cache.get<string>(cacheKey) || '';
+
+  if (!hlsUrl) {
+    try {
+      const febBoxId = await showbox.getFebBoxId(id, '1');
+      if (febBoxId) {
+        const files = await febbox.getFileList(febBoxId);
+        const videoFiles = files.filter(f => !f.is_dir);
+        for (const file of videoFiles) {
+          const rawLinks = await febbox.getLinks(file.id, febBoxId);
+          const hlsLink = rawLinks.find(l => l.url.includes('.m3u8'));
+          if (hlsLink) {
+            hlsUrl = hlsLink.url;
+            // Store in cache for 6 hours (tokens last a while, but not forever)
+            await cache.set(cacheKey, hlsUrl, 21600);
+            break;
+          }
+        }
       }
-    }
-  } catch (e) {}
+    } catch (e) {}
+  }
 
   if (!hlsUrl) return c.json({ error: 'No stream found' }, 404);
 
@@ -210,8 +229,16 @@ media.get('/play/:id', async (c) => {
 
 media.get("/show/:id", async (c) => {
   const id = c.req.param("id");
+  const cache = c.var.cache;
+  const cacheKey = `media:show:${id}`;
+
+  const cached = await cache.get(cacheKey);
+  if (cached) return c.json(cached);
+
   const details = await showbox.getShowDetails(id);
   if (!details) return c.json({ error: "Show not found" }, 404);
+
+  await cache.set(cacheKey, details, 3600);
   return c.json(details);
 });
 

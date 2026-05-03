@@ -5,6 +5,8 @@ export type Bindings = Env & {
   MYFLIXI_CACHE?: KVNamespace;
 };
 
+import { ICacheService } from '../core/services/CacheService';
+
 export type Variables = {
-  // Add any custom variables here
+  cache: ICacheService;
 };

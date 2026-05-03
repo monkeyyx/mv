@@ -9,7 +9,12 @@ import media from "./routes/media";
 import febbox from "./routes/febbox";
 import discover from "./routes/discover";
 
+import { CacheService } from "../core/services/CacheService";
+
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
+
+// Persistent cache instance for local development
+let localCacheInstance: CacheService | null = null;
 
 // --- Global Middleware ---
 app.use("*", cors());
@@ -23,6 +28,12 @@ app.use("*", async (c, next) => {
       } catch (e) {}
     }
   }
+
+  // Initialize Cache Service
+  if (!localCacheInstance) {
+    localCacheInstance = new CacheService(c.env.MYFLIXI_CACHE);
+  }
+  c.set("cache", localCacheInstance);
 
   // Validate environment variables using Zod
   try {

@@ -40084,6 +40084,10 @@ media.get("/search", async (c) => {
 });
 media.get("/movie/:id", async (c) => {
   const id = c.req.param("id");
+  const cache = c.var.cache;
+  const cacheKey = `media:movie:${id}`;
+  const cached2 = await cache.get(cacheKey);
+  if (cached2) return c.json(cached2);
   const details = await showbox.getMovieDetails(id);
   if (!details) return c.json({ error: "Movie not found" }, 404);
   const mutableDetails = JSON.parse(JSON.stringify(details));
@@ -40120,26 +40124,32 @@ media.get("/movie/:id", async (c) => {
   } catch (e) {
     console.error("Resolution failed:", e.message);
   }
+  await cache.set(cacheKey, mutableDetails, 3600);
   return c.json(mutableDetails);
 });
 media.get("/stream/:id", async (c) => {
   const id = c.req.param("id");
-  let hlsUrl = "";
-  try {
-    const febBoxId = await showbox.getFebBoxId(id, "1");
-    if (febBoxId) {
-      const files = await febbox.getFileList(febBoxId);
-      const videoFiles = files.filter((f) => !f.is_dir);
-      for (const file2 of videoFiles) {
-        const rawLinks = await febbox.getLinks(file2.id, febBoxId);
-        const hlsLink = rawLinks.find((l) => l.url.includes(".m3u8"));
-        if (hlsLink) {
-          hlsUrl = hlsLink.url;
-          break;
+  const cache = c.var.cache;
+  const cacheKey = `media:stream_url:${id}`;
+  let hlsUrl = await cache.get(cacheKey) || "";
+  if (!hlsUrl) {
+    try {
+      const febBoxId = await showbox.getFebBoxId(id, "1");
+      if (febBoxId) {
+        const files = await febbox.getFileList(febBoxId);
+        const videoFiles = files.filter((f) => !f.is_dir);
+        for (const file2 of videoFiles) {
+          const rawLinks = await febbox.getLinks(file2.id, febBoxId);
+          const hlsLink = rawLinks.find((l) => l.url.includes(".m3u8"));
+          if (hlsLink) {
+            hlsUrl = hlsLink.url;
+            await cache.set(cacheKey, hlsUrl, 21600);
+            break;
+          }
         }
       }
+    } catch (e) {
     }
-  } catch (e) {
   }
   if (!hlsUrl) return c.json({ error: "No stream found" }, 404);
   const upstream = await fetch(hlsUrl, {
@@ -40224,8 +40234,13 @@ media.get("/play/:id", async (c) => {
 });
 media.get("/show/:id", async (c) => {
   const id = c.req.param("id");
+  const cache = c.var.cache;
+  const cacheKey = `media:show:${id}`;
+  const cached2 = await cache.get(cacheKey);
+  if (cached2) return c.json(cached2);
   const details = await showbox.getShowDetails(id);
   if (!details) return c.json({ error: "Show not found" }, 404);
+  await cache.set(cacheKey, details, 3600);
   return c.json(details);
 });
 var media_default = media;
@@ -40422,108 +40437,120 @@ discover.use("*", async (c, next2) => {
   tmdb.apiKey = c.env.TMDB_API_KEY;
   await next2();
 });
-async function filterAvailable(fetcher, page) {
+async function filterAvailable(c, fetcher, page, cacheKey) {
+  const cache = c.var.cache;
+  const fullCacheKey = `discover:${cacheKey}:${page}`;
+  const cached2 = await cache.get(fullCacheKey);
+  if (cached2) {
+    console.log(`[Discover] Cache Hit: ${fullCacheKey}`);
+    return cached2;
+  }
+  console.log(`[Discover] Cache Miss: ${fullCacheKey}. Fetching...`);
   const raw2 = await fetcher(page);
-  const checks = raw2.map(async (movie) => {
-    const searchResults = await showbox2.search(
-      movie.title,
-      "all",
-      movie.year?.toString()
-    );
-    const found = searchResults.find((result) => {
-      const a = movie.title.toLowerCase().replace(/[^a-z0-9]/g, "");
-      const b = result.title.toLowerCase().replace(/[^a-z0-9]/g, "");
-      const match2 = b.includes(a) || a.includes(b);
-      return match2 && (!movie.year || Math.abs(
-        parseInt(result.year || "0") - parseInt(movie.year || "0")
-      ) <= 1);
-    });
-    if (found) {
-      return {
-        ...movie,
-        isAvailable: true,
-        showbox_id: found.id,
-        box_type: found.box_type,
-        // Convenience: direct stream URL
-        stream_url: `/api/media/stream/${found.id}`,
-        play_url: `/api/media/play/${found.id}`
-      };
-    }
-    return null;
-  });
-  const results = (await Promise.all(checks)).filter(
-    (m) => m !== null
-  );
-  return { page, total: results.length, results };
+  const results = (await Promise.all(
+    raw2.map(async (movie) => {
+      try {
+        const searchResults = await showbox2.search(
+          movie.title,
+          "all",
+          movie.year?.toString()
+        );
+        const found = searchResults.find((result) => {
+          const a = movie.title.toLowerCase().replace(/[^a-z0-9]/g, "");
+          const b = result.title.toLowerCase().replace(/[^a-z0-9]/g, "");
+          const match2 = b.includes(a) || a.includes(b);
+          return match2 && (!movie.year || Math.abs(
+            parseInt(result.year || "0") - parseInt(movie.year || "0")
+          ) <= 1);
+        });
+        if (found) {
+          return {
+            ...movie,
+            isAvailable: true,
+            showbox_id: found.id,
+            box_type: found.box_type,
+            stream_url: `/api/media/stream/${found.id}`,
+            play_url: `/api/media/play/${found.id}`
+          };
+        }
+      } catch (e) {
+        console.error(`Check failed for ${movie.title}:`, e);
+      }
+      return null;
+    })
+  )).filter((m) => m !== null);
+  const response = { page, total: results.length, results };
+  await cache.set(fullCacheKey, response, 3600);
+  return response;
 }
 __name(filterAvailable, "filterAvailable");
 discover.get("/movies/popular", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
-  return c.json(await filterAvailable(tmdb.getPopularMovies.bind(tmdb), page));
+  return c.json(await filterAvailable(c, tmdb.getPopularMovies.bind(tmdb), page, "movies:popular"));
 });
 discover.get("/movies/top_rated", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
   return c.json(
-    await filterAvailable(tmdb.getTopRatedMovies.bind(tmdb), page)
+    await filterAvailable(c, tmdb.getTopRatedMovies.bind(tmdb), page, "movies:top_rated")
   );
 });
 discover.get("/movies/now_playing", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
   return c.json(
-    await filterAvailable(tmdb.getNowPlayingMovies.bind(tmdb), page)
+    await filterAvailable(c, tmdb.getNowPlayingMovies.bind(tmdb), page, "movies:now_playing")
   );
 });
 discover.get("/movies/upcoming", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
   return c.json(
-    await filterAvailable(tmdb.getUpcomingMovies.bind(tmdb), page)
+    await filterAvailable(c, tmdb.getUpcomingMovies.bind(tmdb), page, "movies:upcoming")
   );
 });
 discover.get("/shows/popular", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
-  return c.json(await filterAvailable(tmdb.getPopularShows.bind(tmdb), page));
+  return c.json(await filterAvailable(c, tmdb.getPopularShows.bind(tmdb), page, "shows:popular"));
 });
 discover.get("/shows/top_rated", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
   return c.json(
-    await filterAvailable(tmdb.getTopRatedShows.bind(tmdb), page)
+    await filterAvailable(c, tmdb.getTopRatedShows.bind(tmdb), page, "shows:top_rated")
   );
 });
 discover.get("/shows/airing_today", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
   return c.json(
-    await filterAvailable(tmdb.getAiringTodayShows.bind(tmdb), page)
+    await filterAvailable(c, tmdb.getAiringTodayShows.bind(tmdb), page, "shows:airing_today")
   );
 });
 discover.get("/movies/animation", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
   return c.json(
-    await filterAvailable(tmdb.getAnimationMovies.bind(tmdb), page)
+    await filterAvailable(c, tmdb.getAnimationMovies.bind(tmdb), page, "movies:animation")
   );
 });
 discover.get("/shows/anime", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
-  return c.json(await filterAvailable(tmdb.getAnime.bind(tmdb), page));
+  return c.json(await filterAvailable(c, tmdb.getAnime.bind(tmdb), page, "shows:anime"));
 });
 discover.get("/shows/korean", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
-  return c.json(await filterAvailable(tmdb.getKoreanDramas.bind(tmdb), page));
+  return c.json(await filterAvailable(c, tmdb.getKoreanDramas.bind(tmdb), page, "shows:korean"));
 });
 discover.get("/movies/action", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
-  return c.json(await filterAvailable(tmdb.getActionMovies.bind(tmdb), page));
+  return c.json(await filterAvailable(c, tmdb.getActionMovies.bind(tmdb), page, "movies:action"));
 });
 discover.get("/movies/comedy", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
-  return c.json(await filterAvailable(tmdb.getComedyMovies.bind(tmdb), page));
+  return c.json(await filterAvailable(c, tmdb.getComedyMovies.bind(tmdb), page, "movies:comedy"));
 });
 discover.get("/movies/horror", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
-  return c.json(await filterAvailable(tmdb.getHorrorMovies.bind(tmdb), page));
+  return c.json(await filterAvailable(c, tmdb.getHorrorMovies.bind(tmdb), page, "movies:horror"));
 });
 discover.get("/movies/scifi", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
-  return c.json(await filterAvailable(tmdb.getSciFiMovies.bind(tmdb), page));
+  return c.json(await filterAvailable(c, tmdb.getSciFiMovies.bind(tmdb), page, "movies:scifi"));
 });
 discover.get("/movies", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
@@ -40533,8 +40560,16 @@ discover.get("/movies", async (c) => {
   const minRating = c.req.query("min_rating") ? parseFloat(c.req.query("min_rating")) : void 0;
   return c.json(
     await filterAvailable(
-      (p) => tmdb.discoverMovies({ page: p, genreId, language, sortBy, minRating }),
-      page
+      c,
+      (p) => tmdb.discoverMovies({
+        page: p,
+        genreId,
+        language,
+        sortBy,
+        minRating
+      }),
+      page,
+      `movies:discover:${genreId}:${language}:${sortBy}:${minRating}`
     )
   );
 });
@@ -40546,8 +40581,16 @@ discover.get("/shows", async (c) => {
   const minRating = c.req.query("min_rating") ? parseFloat(c.req.query("min_rating")) : void 0;
   return c.json(
     await filterAvailable(
-      (p) => tmdb.discoverShows({ page: p, genreId, language, sortBy, minRating }),
-      page
+      c,
+      (p) => tmdb.discoverShows({
+        page: p,
+        genreId,
+        language,
+        sortBy,
+        minRating
+      }),
+      page,
+      `shows:discover:${genreId}:${language}:${sortBy}:${minRating}`
     )
   );
 });
@@ -40560,6 +40603,60 @@ discover.get("/genres/shows", async (c) => {
   return c.json({ genres });
 });
 var discover_default = discover;
+
+// src/core/services/CacheService.ts
+init_checked_fetch();
+init_modules_watch_stub();
+var CacheService = class {
+  static {
+    __name(this, "CacheService");
+  }
+  kv;
+  localCache = /* @__PURE__ */ new Map();
+  constructor(kvNamespace) {
+    this.kv = kvNamespace;
+  }
+  async get(key) {
+    if (this.kv) {
+      try {
+        const val2 = await this.kv.get(key, "json");
+        if (val2) return val2;
+      } catch (e) {
+        console.error(`[CacheService] KV Get Error for ${key}:`, e);
+      }
+    }
+    const cached2 = this.localCache.get(key);
+    if (cached2) {
+      if (Date.now() < cached2.expires) {
+        return cached2.value;
+      }
+      this.localCache.delete(key);
+    }
+    return null;
+  }
+  async set(key, value, ttlSeconds = 3600) {
+    if (this.kv) {
+      try {
+        await this.kv.put(key, JSON.stringify(value), {
+          expirationTtl: Math.max(60, ttlSeconds)
+          // KV minimum is 60s
+        });
+      } catch (e) {
+        console.error(`[CacheService] KV Set Error for ${key}:`, e);
+      }
+    }
+    this.localCache.set(key, {
+      value,
+      expires: Date.now() + ttlSeconds * 1e3
+    });
+  }
+  async delete(key) {
+    if (this.kv) {
+      await this.kv.delete(key);
+    }
+    this.localCache.delete(key);
+  }
+};
 
 // node_modules/@scalar/hono-api-reference/dist/index.js
 init_checked_fetch();
@@ -41123,6 +41220,7 @@ var openApiSpec = {
 
 // src/api/index.ts
 var app = new Hono2();
+var localCacheInstance = null;
 app.use("*", cors());
 app.use("*", async (c, next2) => {
   if (typeof process !== "undefined") {
@@ -41133,6 +41231,10 @@ app.use("*", async (c, next2) => {
       }
     }
   }
+  if (!localCacheInstance) {
+    localCacheInstance = new CacheService(c.env.MYFLIXI_CACHE);
+  }
+  c.set("cache", localCacheInstance);
   try {
     validateEnv(c.env);
   } catch (e) {
