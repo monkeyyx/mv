@@ -9,6 +9,9 @@ const showbox = new ShowboxService();
 const febbox = new FebBoxService();
 
 media.use("*", async (c, next) => {
+  // Inject Durable Object session and environment for automated login
+  (febbox as any).sessionDO = c.env.FEBBOX_SESSION;
+  (febbox as any).env = c.env;
   febbox.uiCookie = c.env.FEBBOX_UI_COOKIE;
   await next();
 });

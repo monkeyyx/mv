@@ -6,6 +6,9 @@ const febbox = new Hono<{ Bindings: Bindings, Variables: Variables }>();
 const service = new FebBoxService();
 
 febbox.use('*', async (c, next) => {
+  // Inject Durable Object session and environment for automated login
+  (service as any).sessionDO = c.env.FEBBOX_SESSION;
+  (service as any).env = c.env;
   service.uiCookie = c.env.FEBBOX_UI_COOKIE;
   await next();
 });

@@ -20,24 +20,75 @@ export class FebBoxService {
   };
 
   public uiCookie: string | undefined = "";
+  private sessionDO: any; // DurableObjectNamespace
+  private env: any;
 
-  private get cookie(): string {
-    return this.uiCookie || "";
+  constructor(sessionDO?: any, env?: any) {
+    this.sessionDO = sessionDO;
+    this.env = env;
+  }
+
+  private async getCookieFromDO(): Promise<string> {
+    if (!this.sessionDO) return this.uiCookie || "";
+    
+    try {
+      const id = this.sessionDO.idFromName("global");
+      const stub = this.sessionDO.get(id);
+      const res = await stub.fetch("http://do/get");
+      let cookie = await res.text();
+
+      if (!cookie && this.env?.FEBBOX_EMAIL && this.env?.FEBBOX_PASSWORD) {
+        console.log("[FebBoxService] No cookie in DO, triggering refresh...");
+        const refreshRes = await stub.fetch("http://do/refresh", {
+          method: "POST",
+          body: JSON.stringify({
+            email: this.env.FEBBOX_EMAIL,
+            password: this.env.FEBBOX_PASSWORD
+          })
+        });
+        cookie = await refreshRes.text();
+      }
+
+      return cookie || this.uiCookie || "";
+    } catch (e) {
+      console.error("[FebBoxService] Error getting cookie from DO:", e);
+      return this.uiCookie || "";
+    }
   }
 
   private async fetchRaw(
     url: string,
     extraHeaders: Record<string, string> = {},
+    retryOn403: boolean = true
   ): Promise<Response> {
     try {
       const headers: Record<string, string> = {
         ...this.headers,
         ...extraHeaders,
       };
-      if (this.cookie) {
-        headers["cookie"] = `ui=${this.cookie}`;
+      
+      const cookieValue = await this.getCookieFromDO();
+      if (cookieValue) {
+        headers["cookie"] = `ui=${cookieValue}`;
       }
+
       const response = await fetch(url, { headers });
+      
+      if (response.status === 403 && retryOn403 && this.sessionDO && this.env?.FEBBOX_EMAIL) {
+        console.warn(`[FebBoxService] 403 Forbidden for ${url}. Attempting DO refresh...`);
+        const id = this.sessionDO.idFromName("global");
+        const stub = this.sessionDO.get(id);
+        await stub.fetch("http://do/refresh", {
+          method: "POST",
+          body: JSON.stringify({
+            email: this.env.FEBBOX_EMAIL,
+            password: this.env.FEBBOX_PASSWORD
+          })
+        });
+        // Retry once with new cookie
+        return this.fetchRaw(url, extraHeaders, false);
+      }
+
       if (!response.ok) {
         throw new Error(`[FebBox] HTTP Error: ${response.status} for ${url}`);
       }

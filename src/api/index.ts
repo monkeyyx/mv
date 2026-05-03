@@ -81,10 +81,11 @@ app.get("/openapi.json", (c) => {
 // --- Health Check ---
 app.get("/", (c) =>
   c.json({
-    message: "MyFlixi Edge API v2.2.0 (Modular Hono)",
+    message: "MyFlixi Edge API v2.3.0 (Durable Sessions)",
     docs: "/docs",
     status: "online",
   }),
 );
 
+export { FebBoxSession } from "../core/services/FebBoxSession";
 export default app;

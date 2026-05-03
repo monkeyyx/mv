@@ -3,6 +3,7 @@ import { Env } from '../core/utils/config';
 
 export type Bindings = Env & {
   MYFLIXI_CACHE?: KVNamespace;
+  FEBBOX_SESSION: DurableObjectNamespace;
 };
 
 import { ICacheService } from '../core/services/CacheService';

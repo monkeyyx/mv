@@ -9,8 +9,16 @@ ORIGIN_API = "https://your-api.com"
 
 [[kv_namespaces]]
 binding = "MYFLIXI_CACHE"
-id = "xxxx" # Replace with real ID after wrangler kv:namespace create
+id = "xxxx" 
 preview_id = "xxxx"
+
+[[durable_objects.bindings]]
+name = "FEBBOX_SESSION"
+class_name = "FebBoxSession"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["FebBoxSession"]
 
 [observability]
 enabled = true

@@ -2,6 +2,8 @@ import { z } from "zod";
 
 export const envSchema = z.object({
   FEBBOX_UI_COOKIE: z.string().optional(),
+  FEBBOX_EMAIL: z.string().optional(),
+  FEBBOX_PASSWORD: z.string().optional(),
   ADMIN_SECRET: z.string().default("admin"),
   API_PORT: z.string().default("3000"),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
