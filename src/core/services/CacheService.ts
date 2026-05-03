@@ -40,13 +40,34 @@ export class CacheService implements ICacheService {
       this.localCache.delete(key);
     }
 
-    // 2. Try Redis First (Stronger consistency, faster TTL)
+    // 2. Try KV first (Edge-native, much faster than external Redis REST)
+    if (this.kv) {
+      try {
+        const { value, metadata } = await this.kv.getWithMetadata<{ expires: number; swrExpires: number }>(key, "json");
+        if (value) {
+          const now = Date.now();
+          const meta = metadata || { expires: 0, swrExpires: 0 };
+          
+          this.localCache.set(key, { 
+            value, 
+            expires: meta.expires, 
+            swrExpires: meta.swrExpires 
+          });
+
+          if (now < meta.expires) return { value: value as T, isStale: false };
+          if (now < meta.swrExpires) return { value: value as T, isStale: true };
+        }
+      } catch (e) {
+        console.error(`[CacheService] KV Get Error for ${key}:`, e);
+      }
+    }
+
+    // 3. Try Redis as fallback (External, potentially higher latency)
     if (this.redis) {
       try {
         const data = await this.redis.get<{ value: T; expires: number; swrExpires: number }>(key);
         if (data) {
           const now = Date.now();
-          // Populate local cache
           this.localCache.set(key, { 
             value: data.value, 
             expires: data.expires, 
@@ -58,33 +79,6 @@ export class CacheService implements ICacheService {
         }
       } catch (e) {
         console.error(`[CacheService] Redis Get Error for ${key}:`, e);
-      }
-    }
-
-    // 3. Try KV if available
-    if (this.kv) {
-      try {
-        const { value, metadata } = await this.kv.getWithMetadata<{ expires: number; swrExpires: number }>(key, "json");
-        if (value) {
-          const now = Date.now();
-          const meta = metadata || { expires: 0, swrExpires: 0 };
-          
-          // Re-populate local cache for faster subsequent hits
-          this.localCache.set(key, { 
-            value, 
-            expires: meta.expires, 
-            swrExpires: meta.swrExpires 
-          });
-
-          if (now < meta.expires) {
-            return { value: value as T, isStale: false };
-          }
-          if (now < meta.swrExpires) {
-            return { value: value as T, isStale: true };
-          }
-        }
-      } catch (e) {
-        console.error(`[CacheService] KV Get Error for ${key}:`, e);
       }
     }
 

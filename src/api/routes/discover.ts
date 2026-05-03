@@ -81,6 +81,21 @@ async function performFetchAndCache(
       await Promise.all(
         raw.map(async (movie) => {
           try {
+            // Check granular cache for this specific movie search (to avoid 700ms ShowBox hits)
+            const movieSearchKey = `sb:search:${movie.title.toLowerCase().replace(/[^a-z0-9]/g, "")}:${movie.year}`;
+            const cachedMatch = await cache.get(movieSearchKey);
+            
+            if (cachedMatch) {
+              return {
+                ...movie,
+                isAvailable: true,
+                showbox_id: cachedMatch.id,
+                box_type: cachedMatch.box_type,
+                stream_url: `/api/media/stream/${cachedMatch.id}`,
+                play_url: `/api/media/play/${cachedMatch.id}`,
+              } as Movie;
+            }
+
             const searchResults = await showbox.search(
               movie.title,
               "all",
@@ -100,7 +115,7 @@ async function performFetchAndCache(
             });
 
             if (found) {
-              return {
+              const resultData = {
                 ...movie,
                 isAvailable: true,
                 showbox_id: found.id,
@@ -108,6 +123,15 @@ async function performFetchAndCache(
                 stream_url: `/api/media/stream/${found.id}`,
                 play_url: `/api/media/play/${found.id}`,
               } as Movie;
+
+              // Cache individual match for 24h to speed up future discovery lists
+              if (c.executionCtx?.waitUntil) {
+                c.executionCtx.waitUntil(cache.set(movieSearchKey, { id: found.id, box_type: found.box_type }, 86400));
+              } else {
+                cache.set(movieSearchKey, { id: found.id, box_type: found.box_type }, 86400);
+              }
+
+              return resultData;
             }
           } catch (e) {
             console.error(`Check failed for ${movie.title}:`, e);
