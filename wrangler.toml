@@ -9,8 +9,7 @@ ORIGIN_API = "https://your-api.com"
 
 [[kv_namespaces]]
 binding = "MYFLIXI_CACHE"
-id = "xxxx" 
-preview_id = "xxxx"
+id = "56cdb2cbdc244886aaf1d5893df3fad1"
 
 [observability]
 enabled = true
