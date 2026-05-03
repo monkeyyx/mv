@@ -156,28 +156,30 @@ async function performFetchAndCache(
 
 discover.get("/movies/popular", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
-  return c.json(await filterAvailable(c, tmdb.getPopularMovies.bind(tmdb), page, "movies:popular"));
+  const data = await filterAvailable(c, tmdb.getPopularMovies.bind(tmdb), page, "movies:popular");
+  c.header("Cache-Control", "public, s-maxage=3600, max-age=300, stale-while-revalidate=600");
+  return c.json(data);
 });
 
 discover.get("/movies/top_rated", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
-  return c.json(
-    await filterAvailable(c, tmdb.getTopRatedMovies.bind(tmdb), page, "movies:top_rated")
-  );
+  const data = await filterAvailable(c, tmdb.getTopRatedMovies.bind(tmdb), page, "movies:top_rated");
+  c.header("Cache-Control", "public, s-maxage=3600, max-age=300, stale-while-revalidate=600");
+  return c.json(data);
 });
 
 discover.get("/movies/now_playing", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
-  return c.json(
-    await filterAvailable(c, tmdb.getNowPlayingMovies.bind(tmdb), page, "movies:now_playing")
-  );
+  const data = await filterAvailable(c, tmdb.getNowPlayingMovies.bind(tmdb), page, "movies:now_playing");
+  c.header("Cache-Control", "public, s-maxage=3600, max-age=300, stale-while-revalidate=600");
+  return c.json(data);
 });
 
 discover.get("/movies/upcoming", async (c) => {
   const page = parseInt(c.req.query("page") || "1");
-  return c.json(
-    await filterAvailable(c, tmdb.getUpcomingMovies.bind(tmdb), page, "movies:upcoming")
-  );
+  const data = await filterAvailable(c, tmdb.getUpcomingMovies.bind(tmdb), page, "movies:upcoming");
+  c.header("Cache-Control", "public, s-maxage=3600, max-age=300, stale-while-revalidate=600");
+  return c.json(data);
 });
 
 // ---------------------------------------------------------------------------
