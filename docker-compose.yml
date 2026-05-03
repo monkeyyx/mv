@@ -1,14 +1,14 @@
-version: '3.8'
-
 services:
   app:
     build: .
-    container_name: showbox-febbox-api
+    container_name: myflixi-api
     ports:
-      - "3000:3000" # Expose the app on port 3000
+      - "3000:3000"
     volumes:
-      - .:/usr/src/app # Mount the current directory into the container
-      - /usr/src/app/node_modules # Prevent overwriting node_modules
+      - .:/app
+      - /app/node_modules # Protect node_modules from being overwritten
     environment:
-      - NODE_ENV=local
-    restart: always
+      - NODE_ENV=development
+      - FEBBOX_UI_COOKIE=${FEBBOX_UI_COOKIE}
+      - ADMIN_SECRET=${ADMIN_SECRET}
+    restart: unless-stopped

@@ -1,20 +1,15 @@
-# Use official Node.js image as a base
-FROM node:18-alpine
+# Use the tiny Alpine-based Bun image
+FROM oven/bun:alpine
+WORKDIR /app
 
-# Set the working directory to /usr/src/app
-WORKDIR /usr/src/app
+# Only copy dependency files first (best for caching)
+COPY package.json bun.lockb* ./
+RUN bun install
 
-# Copy package.json and package-lock.json from the root folder to the container
-COPY package*.json ./
+# Copy the rest of the code
+COPY . .
 
-# Install dependencies
-RUN npm install
-
-# Copy the entire src folder into the container
-COPY src/ ./src
-
-# Expose the port that the app will run on
 EXPOSE 3000
 
-# Start the application (run node src/server.js)
-CMD ["node", "src/server.js"]
+# Use --watch for instant restarts inside Docker
+CMD ["bun", "--watch", "src/index.ts"]

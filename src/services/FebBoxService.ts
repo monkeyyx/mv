@@ -1,0 +1,250 @@
+import * as cheerio from "cheerio";
+import type { FileItem, StreamSource } from "../types";
+
+export class FebBoxService {
+  private baseUrl = "https://www.febbox.com";
+  private headers = {
+    "User-Agent":
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+    "Accept-Language": "en-US,en;q=0.9",
+  };
+
+  private get cookie(): string {
+    return process.env.FEBBOX_UI_COOKIE || "";
+  }
+
+  private async fetchRaw(
+    url: string,
+    extraHeaders: Record<string, string> = {},
+  ): Promise<Response> {
+    try {
+      const response = await fetch(url, {
+        headers: {
+          ...this.headers,
+          cookie: `ui=${this.cookie}`,
+          ...extraHeaders,
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`[FebBox] HTTP Error: ${response.status} for ${url}`);
+      }
+      return response;
+    } catch (error) {
+      throw new Error(`[FebBox] Fetch Error: ${(error as Error).message}`);
+    }
+  }
+
+  // --- Public Share Logic ---
+
+  async getFileList(
+    shareKey: string,
+    parentId: string = "0",
+  ): Promise<FileItem[]> {
+    try {
+      const url = `${this.baseUrl}/file/file_share_list?share_key=${shareKey}&pwd=&parent_id=${parentId}&is_html=0`;
+      const response = await this.fetchRaw(url, {
+        referer: `${this.baseUrl}/share/${shareKey}`,
+      });
+      const data = await response.json();
+      if (!data || !data.data) return [];
+
+      return (data.data.file_list || []).map((f: any) => ({
+        name: f.file_name,
+        id: f.fid,
+        is_dir: f.is_dir === 1,
+        size: f.file_size_fmt,
+        type: f.file_type,
+      }));
+    } catch (error) {
+      console.error(`[FebBox] Error in getFileList:`, error);
+      return [];
+    }
+  }
+
+  async getPublicLinks(shareKey: string, fid: string): Promise<StreamSource[]> {
+    try {
+      const url = `${this.baseUrl}/console/video_quality_list?fid=${fid}`;
+      const response = await this.fetchRaw(url, {
+        referer: `${this.baseUrl}/share/${shareKey}`,
+      });
+      const data = await response.json();
+      return this.parseHtmlTable(data.html || "");
+    } catch (error) {
+      console.error(`[FebBox] Error in getPublicLinks:`, error);
+      return [];
+    }
+  }
+
+  // --- Private Console Logic ---
+
+  async getConsoleFileList(
+    parentId: string = "0",
+    fromUid: string | null = null,
+  ): Promise<FileItem[]> {
+    try {
+      let url = `${this.baseUrl}/console/${parentId === "0" ? "file_list" : "index_ajax"}`;
+      const params = new URLSearchParams({ parent_id: parentId });
+
+      if (fromUid && fromUid !== "0") {
+        params.append("from_uid", fromUid);
+        // For shared folders, we often need both fid (the share root) and parent_id (the current folder)
+        // We pass the parentId as both to be safe
+        params.append("fid", parentId);
+      }
+
+      url += `${url.includes("?") ? "&" : "?"}${params.toString()}`;
+
+      const response = await this.fetchRaw(url, {
+        "x-requested-with": "XMLHttpRequest",
+      });
+      const data = await response.json();
+      if (data.code !== 1) return [];
+
+      const html =
+        data.html || (data.data && (data.data.list || data.data.html)) || "";
+      return this.parseHtmlTable(html, parentId);
+    } catch (error) {
+      console.error(`[FebBox] Error in getConsoleFileList:`, error);
+      return [];
+    }
+  }
+
+  async searchConsole(query: string): Promise<FileItem[]> {
+    try {
+      const url = `${this.baseUrl}/console/index_ajax?q=${encodeURIComponent(query)}`;
+      const response = await this.fetchRaw(url, {
+        "x-requested-with": "XMLHttpRequest",
+      });
+      const data = await response.json();
+      const html = data.data?.list || data.html || data.data?.html || "";
+      return this.parseHtmlTable(html);
+    } catch (error) {
+      console.error(`[FebBox] Error in searchConsole:`, error);
+      return [];
+    }
+  }
+
+  async getLinks(fid: string, shareKey?: string): Promise<StreamSource[]> {
+    try {
+      const url = `${this.baseUrl}/console/video_quality_list?fid=${fid}`;
+      const headers: Record<string, string> = {
+        "x-requested-with": "XMLHttpRequest",
+      };
+      if (shareKey) {
+        headers["referer"] = `${this.baseUrl}/share/${shareKey}`;
+      }
+      const response = await this.fetchRaw(url, headers);
+      const data = await response.json();
+      return this.parseHtmlTable(data.html || "");
+    } catch (error) {
+      console.error(`[FebBox] Error in getLinks:`, error);
+      return [];
+    }
+  }
+
+
+  async getConsoleLinks(fid: string): Promise<StreamSource[]> {
+    const url = `${this.baseUrl}/console/video_quality_list?fid=${fid}`;
+    const response = await this.fetchRaw(url, {
+      "x-requested-with": "XMLHttpRequest",
+    });
+    if (!response) return [];
+
+    const data = await response.json();
+    return this.parseHtmlTable(data.html || "");
+  }
+
+  // --- Shared Parser ---
+
+  private parseHtmlTable(html: string, currentParentId: string = "0"): any[] {
+    if (!html) return [];
+
+    const wrappedHtml =
+      html.includes("<tr") && !html.includes("<table")
+        ? `<table>${html}</table>`
+        : html;
+    const $ = cheerio.load(wrappedHtml);
+    const results: any[] = [];
+
+    if ($("tr").length > 0) {
+      $("tr").each((_, row) => {
+        const $row = $(row);
+        const link = $row.find("a").first().attr("href");
+
+        let fid = null;
+        let fromUid =
+          $row.attr("data-uid") ||
+          $row.find("[data-uid]").attr("data-uid") ||
+          null;
+
+        // 1. Try to get ID from data-id (Usually the most reliable for nested items)
+        fid = $row.attr("fid") || $row.find("[data-id]").attr("data-id");
+
+        // 2. Intelligently parse the link if available
+        if (link) {
+          const fidParam = new URLSearchParams(link.split("?")[1]).get("fid");
+          const parentParam = new URLSearchParams(link.split("?")[1]).get(
+            "parent_id",
+          );
+          const uidParam = new URLSearchParams(link.split("?")[1]).get(
+            "from_uid",
+          );
+
+          if (uidParam) fromUid = uidParam;
+
+          // If we're inside a share, 'parent_id' in the link is actually the child's ID
+          if (parentParam && parentParam !== currentParentId) {
+            fid = parentParam;
+          } else if (fidParam && (!fid || fid === currentParentId)) {
+            fid = fidParam;
+          }
+        }
+
+        if (fid) {
+          const name =
+            $row
+              .find(".file_name, .file-name, .file_info p")
+              .first()
+              .text()
+              .trim() || $row.find("a").first().text().trim();
+          const isDir =
+            $row.find(".icon-folder, .icon_folder, [data-is-dir='1']").length >
+              0 ||
+            (link && link.includes("files?"));
+
+          if (name && fid)
+            results.push({ name, id: fid, is_dir: isDir, from_uid: fromUid });
+        } else {
+          // Quality Table Fallback
+          const quality = $row.find("td").first().text().trim();
+          const url = $row.find("a.btn-download").attr("href");
+          if (quality && url) {
+            results.push({
+              url,
+              quality,
+              label: quality === "ORG" ? "Original" : `${quality}p`,
+            });
+          }
+        }
+      });
+    }
+
+    // Quality Divs
+    $(".file_quality").each((_, div) => {
+      const $div = $(div);
+      const url = $div.attr("data-url");
+      const quality = $div.attr("data-quality");
+      const size = $div.find(".size").text().trim();
+      if (url && quality) {
+        results.push({
+          url,
+          quality,
+          size,
+          label: quality === "ORG" ? "Original Quality" : `${quality}p`,
+        });
+      }
+    });
+
+    return results;
+  }
+}

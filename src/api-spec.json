@@ -1,0 +1,455 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "MyFlixi | Ultra-Media API",
+    "version": "2.1.0",
+    "description": "High-performance modular API for Showbox media discovery and FebBox cloud orchestration."
+  },
+  "servers": [
+    { "url": "http://localhost:3000", "description": "Development Server" }
+  ],
+  "tags": [
+    { "name": "Media Discovery", "description": "Showbox Search & Metadata" },
+    {
+      "name": "Discover",
+      "description": "Discover Movies & TV Shows via TMDB"
+    },
+    { "name": "FebBox Cloud", "description": "Cloud Storage & Streaming" },
+    { "name": "System", "description": "Health & Configuration" }
+  ],
+  "paths": {
+    "/api/system/status": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Health Check",
+        "responses": { "200": { "description": "Online" } }
+      }
+    },
+    "/api/system/set-cookie": {
+      "get": {
+        "tags": ["System"],
+        "summary": "Set Auth Cookie",
+        "parameters": [
+          {
+            "name": "secret",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "admin"
+          },
+          {
+            "name": "cookie",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "your_cookie_here"
+          }
+        ],
+        "responses": { "200": { "description": "Cookie updated" } }
+      }
+    },
+    "/api/media/autocomplete": {
+      "get": {
+        "tags": ["Media Discovery"],
+        "summary": "Autocomplete Suggestions",
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "schema": { "type": "string" },
+            "example": "Avatar"
+          }
+        ],
+        "responses": { "200": { "description": "Suggestions list" } }
+      }
+    },
+    "/api/media/search": {
+      "get": {
+        "tags": ["Media Discovery"],
+        "summary": "Global Search",
+        "parameters": [
+          {
+            "name": "title",
+            "in": "query",
+            "schema": { "type": "string" },
+            "example": "Avatar"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": { "type": "string" },
+            "example": "movie"
+          }
+        ],
+        "responses": { "200": { "description": "Media results" } }
+      }
+    },
+    "/api/media/movie/{id}": {
+      "get": {
+        "tags": ["Media Discovery"],
+        "summary": "Movie Details",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": false,
+            "schema": { "type": "string" },
+            "example": "24535"
+          }
+        ],
+        "responses": { "200": { "description": "Metadata" } }
+      }
+    },
+    "/api/media/show/{id}": {
+      "get": {
+        "tags": ["Media Discovery"],
+        "summary": "TV Show Details",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": false,
+            "schema": { "type": "string" },
+            "example": "125"
+          }
+        ],
+        "responses": { "200": { "description": "Metadata" } }
+      }
+    },
+    "/api/media/movies/featured": {
+      "get": {
+        "tags": ["Media Discovery"],
+        "summary": "Featured Movies",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "example": 1
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "example": 20
+          }
+        ],
+        "responses": { "200": { "description": "List of featured movies" } }
+      }
+    },
+    "/api/media/movies/top": {
+      "get": {
+        "tags": ["Media Discovery"],
+        "summary": "Top Rated Movies",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "example": 1
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "example": 20
+          }
+        ],
+        "responses": { "200": { "description": "List of top rated movies" } }
+      }
+    },
+    "/api/media/series/featured": {
+      "get": {
+        "tags": ["Media Discovery"],
+        "summary": "Featured Series",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "example": 1
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "example": 20
+          }
+        ],
+        "responses": { "200": { "description": "List of featured series" } }
+      }
+    },
+    "/api/media/series/top": {
+      "get": {
+        "tags": ["Media Discovery"],
+        "summary": "Top Rated Series",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "example": 1
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "example": 20
+          }
+        ],
+        "responses": { "200": { "description": "List of top rated series" } }
+      }
+    },
+    "/api/discover/movies/popular": {
+      "get": {
+        "tags": ["Discover"],
+        "summary": "Popular Movies",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "responses": { "200": { "description": "List of popular movies" } }
+      }
+    },
+    "/api/discover/movies/top_rated": {
+      "get": {
+        "tags": ["Discover"],
+        "summary": "Top Rated Movies",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "responses": { "200": { "description": "List of top rated movies" } }
+      }
+    },
+    "/api/discover/shows/popular": {
+      "get": {
+        "tags": ["Discover"],
+        "summary": "Popular TV Shows",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "responses": { "200": { "description": "List of popular TV shows" } }
+      }
+    },
+    "/api/discover/shows/top_rated": {
+      "get": {
+        "tags": ["Discover"],
+        "summary": "Top Rated TV Shows",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "responses": { "200": { "description": "List of top rated TV shows" } }
+      }
+    },
+    "/api/discover/genres/movies": {
+      "get": {
+        "tags": ["Discover"],
+        "summary": "List Movie Genres",
+        "responses": { "200": { "description": "List of movie genres" } }
+      }
+    },
+    "/api/discover/genres/shows": {
+      "get": {
+        "tags": ["Discover"],
+        "summary": "List TV Show Genres",
+        "responses": { "200": { "description": "List of TV show genres" } }
+      }
+    },
+    "/api/discover/movies/genre/{id}": {
+      "get": {
+        "tags": ["Discover"],
+        "summary": "Discover Movies by Genre",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "28"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "responses": { "200": { "description": "List of movies in genre" } }
+      }
+    },
+    "/api/discover/shows/genre/{id}": {
+      "get": {
+        "tags": ["Discover"],
+        "summary": "Discover TV Shows by Genre",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "16"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer" },
+            "example": 1
+          }
+        ],
+        "responses": { "200": { "description": "List of TV shows in genre" } }
+      }
+    },
+    "/api/febbox/folder/id/{id}": {
+      "get": {
+        "tags": ["FebBox Cloud"],
+        "summary": "Browse Folder by ID",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "48732590"
+          },
+          {
+            "name": "uid",
+            "in": "query",
+            "schema": { "type": "string" },
+            "example": "1696859"
+          }
+        ],
+        "responses": { "200": { "description": "File list" } }
+      }
+    },
+    "/api/febbox/folder/{name}": {
+      "get": {
+        "tags": ["FebBox Cloud"],
+        "summary": "Browse Folder by Name",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "root"
+          }
+        ],
+        "responses": { "200": { "description": "File list" } }
+      }
+    },
+    "/api/febbox/console/search": {
+      "get": {
+        "tags": ["FebBox Cloud"],
+        "summary": "Search Console",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": { "type": "string" },
+            "example": "Avatar"
+          }
+        ],
+        "responses": { "200": { "description": "Search results" } }
+      }
+    },
+    "/api/febbox/watch/{fid}": {
+      "get": {
+        "tags": ["FebBox Cloud"],
+        "summary": "Resolve Stream Links",
+        "parameters": [
+          {
+            "name": "fid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "46901362"
+          }
+        ],
+        "responses": { "200": { "description": "Stream sources" } }
+      }
+    },
+    "/api/febbox/stream/{fid}": {
+      "get": {
+        "tags": ["FebBox Cloud"],
+        "summary": "Proxy Video Stream",
+        "parameters": [
+          {
+            "name": "fid",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "example": "46901362"
+          },
+          {
+            "name": "quality",
+            "in": "query",
+            "schema": { "type": "string" },
+            "example": "ORG"
+          }
+        ],
+        "responses": { "200": { "description": "Video stream" } }
+      }
+    },
+    "/api/febbox/files": {
+      "get": {
+        "tags": ["FebBox Cloud"],
+        "summary": "Public File List",
+        "parameters": [
+          {
+            "name": "shareKey",
+            "in": "query",
+            "schema": { "type": "string" },
+            "example": "fNBTg8at"
+          },
+          {
+            "name": "parent_id",
+            "in": "query",
+            "schema": { "type": "string" },
+            "example": "0"
+          }
+        ],
+        "responses": { "200": { "description": "File list" } }
+      }
+    },
+    "/api/febbox/links": {
+      "get": {
+        "tags": ["FebBox Cloud"],
+        "summary": "Public Download Links",
+        "parameters": [
+          {
+            "name": "shareKey",
+            "in": "query",
+            "schema": { "type": "string" },
+            "example": "fNBTg8at"
+          },
+          {
+            "name": "fid",
+            "in": "query",
+            "schema": { "type": "string" },
+            "example": "2636650"
+          }
+        ],
+        "responses": { "200": { "description": "Download links" } }
+      }
+    }
+  }
+}
