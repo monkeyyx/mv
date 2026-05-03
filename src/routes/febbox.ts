@@ -56,13 +56,35 @@ router.get("/console/search", async (req, res) => {
 
 router.get("/watch/:fid", async (req, res) => {
   try {
-    const links = await febbox.getConsoleLinks(req.params.fid);
-    const sources = links.map(l => ({
-      ...l,
-      stream_url: `http://localhost:${port}/api/febbox/stream/${req.params.fid}?quality=${l.quality}`
+    const { fid } = req.params;
+    const links = await febbox.getConsoleLinks(fid);
+    const baseUrl = `${req.protocol}://${req.get("host")}`;
+
+    const hlsLinks = links.filter((l) => l.url.includes(".m3u8"));
+    const orgLinks = links.filter((l) => !l.url.includes(".m3u8"));
+
+    const sources = [...hlsLinks, ...orgLinks].map((l) => ({
+      quality: l.quality,
+      label: l.label,
+      size: l.size,
+      is_hls: l.url.includes(".m3u8"),
+      direct_url: l.url,
+      stream_url: `${baseUrl}/api/febbox/stream/${fid}?quality=${l.quality}`,
     }));
-    res.json({ fid: req.params.fid, sources });
-  } catch (e: any) { res.status(500).json({ error: e.message }); }
+
+    // Pick best HLS for the shortcut link
+    const best = hlsLinks.find((l) => l.quality === "1080p") || hlsLinks[0];
+
+    res.json({
+      fid,
+      isAvailable: sources.length > 0,
+      stream_sources: sources,
+      real_stream_link: best ? `${baseUrl}/api/febbox/stream/${fid}?quality=${best.quality}` : null,
+      hls_url: best ? best.url : null
+    });
+  } catch (e: any) {
+    res.status(500).json({ error: e.message });
+  }
 });
 
 router.get("/stream/:fid", async (req, res) => {
@@ -95,7 +117,7 @@ router.get("/stream/:fid", async (req, res) => {
 router.get("/files", async (req, res) => {
   try {
     const { shareKey = "fNBTg8at", parent_id = "0" } = req.query;
-    res.json(await febbox.getPublicFileList(shareKey as string, parent_id as string));
+    res.json(await febbox.getFileList(shareKey as string, parent_id as string));
   } catch (e: any) { res.status(500).json({ error: e.message }); }
 });
 

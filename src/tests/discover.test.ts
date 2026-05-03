@@ -1,37 +1,12 @@
 import { TMDBService } from "../services/TMDBService";
 import { ShowboxService } from "../services/ShowboxService";
 
-jest.mock("../services/ShowboxService", () => {
-  return {
-    ShowboxService: jest.fn().mockImplementation(() => {
-      return {
-        search: jest.fn().mockImplementation(async (title: string) => {
-          if (title.toLowerCase().includes("avatar")) {
-            return [
-              {
-                title: "Avatar",
-                id: "123",
-                poster: "",
-                year: "2009",
-                rating: "7.9",
-                box_type: 1,
-              },
-            ];
-          }
-          return [];
-        }),
-      };
-    }),
-  };
-});
-
 describe("TMDBService", () => {
   let tmdbService: TMDBService;
   let showboxService: ShowboxService;
 
   beforeEach(() => {
     tmdbService = new TMDBService();
-    // Now ShowboxService is the mocked constructor
     showboxService = new ShowboxService();
   });
 

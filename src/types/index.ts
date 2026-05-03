@@ -31,16 +31,21 @@ export interface Movie {
   poster: string;
   year?: string;
   rating?: string;
-  box_type: string;
+  box_type: string | number;
+  isAvailable?: boolean;
+  showbox_id?: string | number;
 }
 
 export interface ShowDetails extends Movie {
+  shareKey?: string;
+  febBoxId?: string;
   seasons: {
-    season_number: number;
+    season: number;
     episodes: {
-      episode_number: number;
+      episode: number;
       title: string;
       id: string;
+      fid?: string;
     }[];
   }[];
 }

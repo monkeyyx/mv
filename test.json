@@ -1,0 +1,816 @@
+{
+  "id": 4965,
+  "mb_id": 1534,
+  "title": "Stay Alive",
+  "vip_only": 0,
+  "display": 1,
+  "state": 1,
+  "source_file": 1,
+  "code_file": 1,
+  "director": "William Brent Bell",
+  "writer": "William Brent Bell, Matthew Peterman",
+  "actors": "Frankie Muniz, Jon Foster, Samaire Armstrong",
+  "runtime": 85,
+  "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjYvMDMvMjkvMjAyNjAzMjkxMDI2NDUxOTQxNi5qcGd8NTAwfDc0.png",
+  "poster_imdb": 1,
+  "description": "After the brutal death of a friend, a group of friends find themselves in possession of a video-game called \"Stay Alive,\" a blood-curdling true story of a 17th century noblewoman known as the Blood Countess. After playing the game when they know they shouldn't, however, the friends realize that once they die in the game — they die for real!",
+  "cats": "horror,thriller",
+  "year": 2006,
+  "imdb_id": "tt0441796",
+  "imdb_rating": "5.1",
+  "trailer": "[{\"key\":\"DjzqGzuZSfI\",\"img\":\"https:\\/\\/i.ytimg.com\\/vi\\/DjzqGzuZSfI\\/hqdefault.jpg\"}]",
+  "recommend": [
+    {
+      "mid": 5557,
+      "title": "House on Haunted Hill",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMTIvMDMvMjAxODEyMDMwNzUyMDgyMTAyNy5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/12/03/2018120307520821027.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMTIvMDMvMjAxODEyMDMwNzUyMDgyMTAyNy5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "5.6",
+      "audio_lang": "eng",
+      "runtime": 93,
+      "cats": "horror,mystery,thriller",
+      "year": 1999,
+      "3d": 0
+    },
+    {
+      "mid": 5365,
+      "title": "Thir13en Ghosts",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjMvMDYvMTIvMjAyMzA2MTIwNjAxMDQ4MjE3Ni5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2023/06/12/2023061206010482176.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjMvMDYvMTIvMjAyMzA2MTIwNjAxMDQ4MjE3Ni5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray, dolby",
+      "imdb_rating": "5.6",
+      "audio_lang": "eng",
+      "runtime": 91,
+      "cats": "fantasy,horror",
+      "year": 2001,
+      "3d": 0
+    },
+    {
+      "mid": 26014,
+      "title": "Cursed",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjAvMDUvMDMvMjAyMDA1MDMxMjA2MDc1OTQxNi5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2020/05/03/2020050312060759416.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjAvMDUvMDMvMjAyMDA1MDMxMjA2MDc1OTQxNi5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "5.1",
+      "audio_lang": "eng",
+      "runtime": 97,
+      "cats": "comedy,horror",
+      "year": 2005,
+      "3d": 0
+    },
+    {
+      "mid": 27072,
+      "title": "Darkness Falls",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjAvMDYvMDcvMjAyMDA2MDcxMjA4MDUyNTQyNy5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2020/06/07/2020060712080525427.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjAvMDYvMDcvMjAyMDA2MDcxMjA4MDUyNTQyNy5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "5",
+      "audio_lang": "eng",
+      "runtime": 86,
+      "cats": "fantasy,horror,mystery,thriller",
+      "year": 2003,
+      "3d": 0
+    },
+    {
+      "mid": 4736,
+      "title": "Ghost Ship",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMxNjI1MTg2NTI5OC5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/07/13/2018071316251865298.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMxNjI1MTg2NTI5OC5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "5.6",
+      "audio_lang": "eng",
+      "runtime": 91,
+      "cats": "horror,mystery,thriller",
+      "year": 2002,
+      "3d": 0
+    },
+    {
+      "mid": 1059,
+      "title": "Jeepers Creepers 2",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjYvMDIvMjIvMjAyNjAyMjIxNTI1MjQ0MjM2OC5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2026/02/22/2026022215252442368.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjYvMDIvMjIvMjAyNjAyMjIxNTI1MjQ0MjM2OC5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "5.7",
+      "audio_lang": "eng",
+      "runtime": 104,
+      "cats": "horror",
+      "year": 2003,
+      "3d": 0
+    },
+    {
+      "mid": 5335,
+      "title": "Agent Cody Banks",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTQvMjAxODA3MTQyMDIwMDM1NTMxMS5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/07/14/2018071420200355311.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTQvMjAxODA3MTQyMDIwMDM1NTMxMS5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "5.2",
+      "audio_lang": "eng",
+      "runtime": 102,
+      "cats": "action,adventure,comedy,crime,family,romance,thriller",
+      "year": 2003,
+      "3d": 0
+    },
+    {
+      "mid": 26471,
+      "title": "Boogeyman",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjAvMDUvMTgvMjAyMDA1MTgwMTI3MDU4MzMyNi5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2020/05/18/2020051801270583326.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjAvMDUvMTgvMjAyMDA1MTgwMTI3MDU4MzMyNi5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "4.2",
+      "audio_lang": "eng",
+      "runtime": 89,
+      "cats": "drama,horror,mystery,thriller",
+      "year": 2005,
+      "3d": 0
+    },
+    {
+      "mid": 4256,
+      "title": "House Of Wax",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMwODI4MjczMTE1My5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/07/13/2018071308282731153.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMwODI4MjczMTE1My5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray, dolby",
+      "imdb_rating": "5.5",
+      "audio_lang": "eng",
+      "runtime": 108,
+      "cats": "horror,thriller",
+      "year": 2005,
+      "3d": 0
+    },
+    {
+      "mid": 4966,
+      "title": "The Messengers",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTQvMjAxODA3MTQwMDIxMTMyMjc5Ny5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/07/14/2018071400211322797.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTQvMjAxODA3MTQwMDIxMTMyMjc5Ny5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "5.4",
+      "audio_lang": "eng",
+      "runtime": 90,
+      "cats": "drama,horror,thriller",
+      "year": 2007,
+      "3d": 0
+    },
+    {
+      "mid": 11549,
+      "title": "See No Evil",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjAvMDQvMzAvMjAyMDA0MzAwMjA3MDY0NzcwMi5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2020/04/30/2020043002070647702.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjAvMDQvMzAvMjAyMDA0MzAwMjA3MDY0NzcwMi5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "5.1",
+      "audio_lang": "eng",
+      "runtime": 84,
+      "cats": "action,horror,thriller",
+      "year": 2006,
+      "3d": 0
+    },
+    {
+      "mid": 4865,
+      "title": "Black Christmas",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMTIvMDMvMjAxODEyMDMwNzEzMzgyMjA3My5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/12/03/2018120307133822073.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMTIvMDMvMjAxODEyMDMwNzEzMzgyMjA3My5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray, dolby",
+      "imdb_rating": "4.7",
+      "audio_lang": "rus,eng",
+      "runtime": 84,
+      "cats": "horror,thriller",
+      "year": 2006,
+      "3d": 0
+    },
+    {
+      "mid": 7339,
+      "title": "Pulse",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMTIvMjQvMjAxODEyMjQxNjQzNTIzNzk5OC5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/12/24/2018122416435237998.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMTIvMjQvMjAxODEyMjQxNjQzNTIzNzk5OC5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "4.7",
+      "audio_lang": "",
+      "runtime": 90,
+      "cats": "horror,sci-fi,thriller",
+      "year": 2006,
+      "3d": 0
+    },
+    {
+      "mid": 5140,
+      "title": "Turistas",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjMvMDIvMTkvMjAyMzAyMTkyMjI2MDcyMTQ4MS5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2023/02/19/2023021922260721481.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjMvMDIvMTkvMjAyMzAyMTkyMjI2MDcyMTQ4MS5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "5.4",
+      "audio_lang": "eng",
+      "runtime": 93,
+      "cats": "horror,mystery,thriller",
+      "year": 2006,
+      "3d": 0
+    },
+    {
+      "mid": 4862,
+      "title": "Dead Silence",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMyMDIyMTc5NTgxOC5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/07/13/2018071320221795818.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMyMDIyMTc5NTgxOC5qcGd8NTAwfDc0.png",
+      "quality_tag": "4k, 4k_hdr, blu-ray, dolby",
+      "imdb_rating": "6.1",
+      "audio_lang": "eng",
+      "runtime": 89,
+      "cats": "horror,mystery,thriller",
+      "year": 2007,
+      "3d": 0
+    },
+    {
+      "mid": 4491,
+      "title": "When a Stranger Calls",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMxMjIyMDQ0NjYyNC5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/07/13/2018071312220446624.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMxMjIyMDQ0NjYyNC5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray, dolby",
+      "imdb_rating": "5.1",
+      "audio_lang": "eng",
+      "runtime": 87,
+      "cats": "horror,thriller",
+      "year": 2006,
+      "3d": 0
+    },
+    {
+      "mid": 13523,
+      "title": "The Hitcher",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTkvMDUvMDYvMjAxOTA1MDYxOTA0MTI2OTUzNy5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2019/05/06/2019050619041269537.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTkvMDUvMDYvMjAxOTA1MDYxOTA0MTI2OTUzNy5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "5.6",
+      "audio_lang": "",
+      "runtime": 84,
+      "cats": "crime,horror,thriller",
+      "year": 2007,
+      "3d": 0
+    },
+    {
+      "mid": 4902,
+      "title": "One Missed Call",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTQvMjAxODA3MTQwMDIwMDIxMDM2OS5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/07/14/2018071400200210369.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTQvMjAxODA3MTQwMDIwMDIxMDM2OS5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "4.1",
+      "audio_lang": "hin,eng",
+      "runtime": 87,
+      "cats": "horror,mystery",
+      "year": 2008,
+      "3d": 0
+    },
+    {
+      "mid": 31504,
+      "title": "Shutter",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjAvMTEvMTgvMjAyMDExMTgwMTE0MDQzNTU1Ny5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2020/11/18/2020111801140435557.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjAvMTEvMTgvMjAyMDExMTgwMTE0MDQzNTU1Ny5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray, dolby",
+      "imdb_rating": "5.2",
+      "audio_lang": "eng",
+      "runtime": 85,
+      "cats": "horror,mystery,thriller",
+      "year": 2008,
+      "3d": 0
+    },
+    {
+      "mid": 4263,
+      "title": "The Haunting in Connecticut",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMTIvMDMvMjAxODEyMDMwNzEyMTk1NDk2Ni5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/12/03/2018120307121954966.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMTIvMDMvMjAxODEyMDMwNzEyMTk1NDk2Ni5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "5.9",
+      "audio_lang": "eng",
+      "runtime": 92,
+      "cats": "drama,horror,thriller",
+      "year": 2009,
+      "3d": 0
+    },
+    {
+      "mid": 3166,
+      "title": "Mirrors",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMwMDIyMjE2Nzg3OC5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/07/13/2018071300222167878.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMwMDIyMjE2Nzg3OC5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "6.1",
+      "audio_lang": "eng",
+      "runtime": 110,
+      "cats": "horror,mystery,thriller",
+      "year": 2008,
+      "3d": 0
+    },
+    {
+      "mid": 5030,
+      "title": "P2",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTQvMjAxODA3MTQwNDIwMTIyNjA4Mi5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/07/14/2018071404201226082.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTQvMjAxODA3MTQwNDIwMTIyNjA4Mi5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray, dolby",
+      "imdb_rating": "5.9",
+      "audio_lang": "eng",
+      "runtime": 98,
+      "cats": "horror,thriller",
+      "year": 2007,
+      "3d": 0
+    },
+    {
+      "mid": 1932,
+      "title": "The Collector",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjYvMDIvMjIvMjAyNjAyMjIxNDE1MzQ4MzQzNC5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2026/02/22/2026022214153483434.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjYvMDIvMjIvMjAyNjAyMjIxNDE1MzQ4MzQzNC5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "6.3",
+      "audio_lang": "eng",
+      "runtime": 89,
+      "cats": "horror,thriller",
+      "year": 2009,
+      "3d": 0
+    },
+    {
+      "mid": 10581,
+      "title": "The Ruins",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMTIvMjUvMjAxODEyMjUyMzI4NTYyOTM4Mi5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/12/25/2018122523285629382.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMTIvMjUvMjAxODEyMjUyMzI4NTYyOTM4Mi5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "5.9",
+      "audio_lang": "",
+      "runtime": 90,
+      "cats": "action,horror",
+      "year": 2008,
+      "3d": 0
+    },
+    {
+      "mid": 4745,
+      "title": "The Final Destination 4",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMyMDIwMDQ0NDcyMS5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/07/13/2018071320200444721.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMyMDIwMDQ0NDcyMS5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray, dolby",
+      "imdb_rating": "5.1",
+      "audio_lang": "eng",
+      "runtime": 82,
+      "cats": "horror,thriller",
+      "year": 2009,
+      "3d": 0
+    },
+    {
+      "mid": 4774,
+      "title": "My Bloody Valentine",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMyMDIwMTAxOTA5Ny5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/07/13/2018071320201019097.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMyMDIwMTAxOTA5Ny5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "5.4",
+      "audio_lang": "eng",
+      "runtime": 101,
+      "cats": "horror,thriller",
+      "year": 2009,
+      "3d": 0
+    },
+    {
+      "mid": 3811,
+      "title": "Sorority Row",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMwNDM5MjQ1NTgwNi5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/07/13/2018071304392455806.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMwNDM5MjQ1NTgwNi5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "5.2",
+      "audio_lang": "eng",
+      "runtime": 101,
+      "cats": "horror,thriller",
+      "year": 2009,
+      "3d": 0
+    },
+    {
+      "mid": 30862,
+      "title": "The Thaw",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjAvMTAvMjUvMjAyMDEwMjUyMzU3MDU2MjkzMS5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2020/10/25/2020102523570562931.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjAvMTAvMjUvMjAyMDEwMjUyMzU3MDU2MjkzMS5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray, dolby",
+      "imdb_rating": "5.2",
+      "audio_lang": "eng",
+      "runtime": 94,
+      "cats": "horror,sci-fi",
+      "year": 2009,
+      "3d": 0
+    },
+    {
+      "mid": 3225,
+      "title": "The Devil inside",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMwMDI1MTM4NTkzMi5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/07/13/2018071300251385932.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMwMDI1MTM4NTkzMi5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "4.2",
+      "audio_lang": "hin,eng",
+      "runtime": 83,
+      "cats": "horror",
+      "year": 2012,
+      "3d": 0
+    },
+    {
+      "mid": 70019,
+      "title": "Pizza Man",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjUvMDQvMTAvMjAyNTA0MTAxMjA1MTc5MDY1MC5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2025/04/10/2025041012051790650.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjUvMDQvMTAvMjAyNTA0MTAxMjA1MTc5MDY1MC5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "3.8",
+      "audio_lang": "",
+      "runtime": 90,
+      "cats": "action,comedy,family",
+      "year": 2011,
+      "3d": 0
+    },
+    {
+      "mid": 3402,
+      "title": "Wer",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMwNDIwMTY0ODEwNy5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2018/07/13/2018071304201648107.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMDcvMTMvMjAxODA3MTMwNDIwMTY0ODEwNy5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "5.9",
+      "audio_lang": "eng",
+      "runtime": 89,
+      "cats": "horror,mystery,thriller",
+      "year": 2013,
+      "3d": 0
+    },
+    {
+      "mid": 33457,
+      "title": "The Black String",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjEvMDEvMjkvMjAyMTAxMjkwNTA0MjQ5ODg5Ni5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2021/01/29/2021012905042498896.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjEvMDEvMjkvMjAyMTAxMjkwNTA0MjQ5ODg5Ni5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray, dolby",
+      "imdb_rating": "5.3",
+      "audio_lang": "eng",
+      "runtime": 93,
+      "cats": "horror,mystery,thriller",
+      "year": 2018,
+      "3d": 0
+    },
+    {
+      "mid": 6816,
+      "title": "Leprechaun Returns",
+      "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjMvMDIvMTkvMjAyMzAyMTkyMjMwMDcxNjAwNC5qcGd8MzAwfDc0.png",
+      "poster_org": "https://images.chuaxin.com/uploadimg/movie/2023/02/19/2023021922300716004.jpg",
+      "poster": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjMvMDIvMTkvMjAyMzAyMTkyMjMwMDcxNjAwNC5qcGd8NTAwfDc0.png",
+      "quality_tag": "blu-ray",
+      "imdb_rating": "5",
+      "audio_lang": "eng",
+      "runtime": 92,
+      "cats": "comedy,fantasy,horror",
+      "year": 2018,
+      "3d": 0
+    }
+  ],
+  "add_time": 1531498873,
+  "collect": 3177,
+  "view": 617556,
+  "download": 240,
+  "released": "24 March 2006 (USA)",
+  "released_timestamp": 1143129600,
+  "update_time": 1560393024,
+  "audio_lang": ["rus", "eng"],
+  "quality_tag": "",
+  "quality_tag_new": "blu-ray",
+  "3d": 0,
+  "remark": "",
+  "pending": "",
+  "content_rating": "PG-13",
+  "tmdb_id": 10069,
+  "tomato_url": "https://www.rottentomatoes.com/m/10006370-stay_alive",
+  "tomato_meter": 12,
+  "tomato_meter_count": 57,
+  "tomato_meter_state": "none",
+  "reelgood_url": "",
+  "audience_score": 56,
+  "audience_score_count": 5007,
+  "no_tomato_url": 0,
+  "weights": 0.3026036322,
+  "1080p": 1,
+  "short_tag": "stay-alive-2006",
+  "tomato_update": 0,
+  "like_status": 0,
+  "like_total": 238,
+  "dislike_total": 14,
+  "poster_min": "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjYvMDMvMjkvMjAyNjAzMjkxMDI2NDUxOTQxNi5qcGd8MzAwfDc0.png",
+  "poster_org": "https://images.chuaxin.com/uploadimg/movie/2026/03/29/2026032910264519416.jpg",
+  "banner": "https://image.tmdb.org/t/p/original/hoGR8l7VYUqtUGDR65citqrhUqi.jpg",
+  "trailer_url_arr": [
+    {
+      "url": "https://m.youtube.com/watch?v=DjzqGzuZSfI",
+      "img": "https://i.ytimg.com/vi/DjzqGzuZSfI/hqdefault.jpg"
+    }
+  ],
+  "trailer_url": "https://m.youtube.com/watch?v=DjzqGzuZSfI",
+  "quality": ["720p", "1080p"],
+  "quality_tags": [],
+  "quality_tags_new": ["blu-ray"],
+  "imdb_link": "https://www.imdb.com/title/tt0441796/",
+  "file": [
+    {
+      "path": "",
+      "quality": "720p",
+      "format": "mp4",
+      "size": "573.67 MB",
+      "vip_only": 1,
+      "count": 20215,
+      "dateline": 1560391296,
+      "mmfid": 72784,
+      "filename": "Stay.Alive.2006.1080-80d.mp4",
+      "quality_tag": "",
+      "audio_lang": "eng",
+      "3d": 0
+    },
+    {
+      "path": "",
+      "quality": "1080p",
+      "format": "",
+      "size": "4.8 GB",
+      "vip_only": 1,
+      "count": 20931,
+      "dateline": 1560435993,
+      "mmfid": 72839,
+      "filename": "Stay.Alive.2006.1080-80d.mp4",
+      "quality_tag": "",
+      "audio_lang": "eng",
+      "3d": 0
+    }
+  ],
+  "seconds": 0,
+  "is_collect": 0,
+  "box_type": 1,
+  "country_list": ["United States"],
+  "language": [
+    {
+      "title": "Stay Alive",
+      "lang": "en"
+    },
+    {
+      "title": "Stay Alive",
+      "lang": "en_1"
+    },
+    {
+      "title": "DEATH GAME デス・ゲーム",
+      "lang": "ja"
+    },
+    {
+      "title": "스테이 얼라이브",
+      "lang": "ko"
+    },
+    {
+      "title": "生存游戏",
+      "lang": "zh-CN"
+    },
+    {
+      "title": "生存遊戲",
+      "lang": "zh-TW"
+    },
+    {
+      "title": "Ezt éld túl!",
+      "lang": "hu"
+    },
+    {
+      "title": "להישאר בחיים",
+      "lang": "he"
+    },
+    {
+      "title": "Stay Alive - taistele tai kuole",
+      "lang": "fi"
+    },
+    {
+      "title": "Остани жив",
+      "lang": "bg"
+    },
+    {
+      "title": "Stai în viață",
+      "lang": "ro"
+    },
+    {
+      "title": "Остаться в живых",
+      "lang": "ru"
+    },
+    {
+      "title": "เกมผีกระชากวิญญาณ",
+      "lang": "th"
+    },
+    {
+      "title": "Ölüm Oyunu",
+      "lang": "tr"
+    },
+    {
+      "title": "Лишитися живим",
+      "lang": "uk"
+    },
+    {
+      "title": "Trò Chơi Định Mệnh",
+      "lang": "vi"
+    },
+    {
+      "title": "Μείνε Ζωντανός",
+      "lang": "el"
+    },
+    {
+      "title": "Stay Alive - Jogo Mortal",
+      "lang": "pt"
+    }
+  ],
+  "playlists": [
+    {
+      "lid": 63395,
+      "name": "Scary Movies to check out!",
+      "username": "Teresa_Graham_Erskinec2",
+      "count": 563,
+      "imgArr": [
+        "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTkvMTIvMjcvMjAxOTEyMjcxOTA0MTMyODczMy5qcGd8NTAwfDc0.png"
+      ],
+      "imgArr_min": [
+        "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTkvMTIvMjcvMjAxOTEyMjcxOTA0MTMyODczMy5qcGd8MzAwfDc0.png"
+      ],
+      "imgArr_org": [
+        "https://images.chuaxin.com/uploadimg/movie/2019/12/27/2019122719041328733.jpg"
+      ]
+    },
+    {
+      "lid": 326669,
+      "name": "Horror Collection ",
+      "username": "Zahoor_Hoosain",
+      "count": 1000,
+      "imgArr": [
+        "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjAvMDYvMDcvMjAyMDA2MDcyMjA5MDY2ODAyOC5qcGd8NTAwfDc0.png"
+      ],
+      "imgArr_min": [
+        "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMjAvMDYvMDcvMjAyMDA2MDcyMjA5MDY2ODAyOC5qcGd8MzAwfDc0.png"
+      ],
+      "imgArr_org": [
+        "https://images.chuaxin.com/uploadimg/movie/2020/06/07/2020060722090668028.jpg"
+      ]
+    },
+    {
+      "lid": 135006,
+      "name": "THE COVENANT 1",
+      "username": "Antonio_Wells_(Beabud)mue",
+      "count": 3974,
+      "imgArr": [
+        "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTkvMTIvMDQvMjAxOTEyMDQwODQyMDUxMjYyOC5qcGd8NTAwfDc0.png"
+      ],
+      "imgArr_min": [
+        "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTkvMTIvMDQvMjAxOTEyMDQwODQyMDUxMjYyOC5qcGd8MzAwfDc0.png"
+      ],
+      "imgArr_org": [
+        "https://images.chuaxin.com/uploadimg/movie/2019/12/04/2019120408420512628.jpg"
+      ]
+    },
+    {
+      "lid": 110649,
+      "name": "Horror: The best list of horror",
+      "username": "Nataly_Garciaa5",
+      "count": 136,
+      "imgArr": [
+        "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMTIvMDMvMjAxODEyMDMwNzM0MjMxNjc1MS5qcGd8NTAwfDc0.png"
+      ],
+      "imgArr_min": [
+        "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMTIvMDMvMjAxODEyMDMwNzM0MjMxNjc1MS5qcGd8MzAwfDc0.png"
+      ],
+      "imgArr_org": [
+        "https://images.chuaxin.com/uploadimg/movie/2018/12/03/2018120307342316751.jpg"
+      ]
+    },
+    {
+      "lid": 475656,
+      "name": "THE HORROR CLUB 👹 (Vol.1) 👹 00 New 28/03/26 ✔",
+      "username": "Badbren_Entertainment_",
+      "count": 999,
+      "imgArr": [
+        "https://thumb.chuaxin.com/thumb_cGxheWxpc3RzX2NvdmVyLzQvNi80NzU2NTYvNjhlZDhkODFlMDUzNC5wbmd8NTAwfDc0.png"
+      ],
+      "imgArr_min": [
+        "https://thumb.chuaxin.com/thumb_cGxheWxpc3RzX2NvdmVyLzQvNi80NzU2NTYvNjhlZDhkODFlMDUzNC5wbmd8MzAwfDc0.png"
+      ],
+      "imgArr_org": [
+        "https://images.chuaxin.com/playlists_cover/4/6/475656/68ed8d81e0534.png"
+      ]
+    },
+    {
+      "lid": 235341,
+      "name": "HORROR",
+      "username": "TNA",
+      "count": 976,
+      "imgArr": [
+        "https://thumb.chuaxin.com/thumb_cGxheWxpc3RzX2NvdmVyLzIvMS8yMzUzNDEvMjAyMzEyMjIwMzA2MDguanBnfDUwMHw3NA__.png"
+      ],
+      "imgArr_min": [
+        "https://thumb.chuaxin.com/thumb_cGxheWxpc3RzX2NvdmVyLzIvMS8yMzUzNDEvMjAyMzEyMjIwMzA2MDguanBnfDMwMHw3NA__.png"
+      ],
+      "imgArr_org": [
+        "https://images.chuaxin.com/playlists_cover/2/1/235341/20231222030608.jpg"
+      ]
+    },
+    {
+      "lid": 28581,
+      "name": "city movies",
+      "username": "LIL_SYD_Foreverb4",
+      "count": 456,
+      "imgArr": [
+        "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMTIvMjQvMjAxODEyMjQxNTQ1Mjg3Mjc2Ni5qcGd8NTAwfDc0.png"
+      ],
+      "imgArr_min": [
+        "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMTIvMjQvMjAxODEyMjQxNTQ1Mjg3Mjc2Ni5qcGd8MzAwfDc0.png"
+      ],
+      "imgArr_org": [
+        "https://images.chuaxin.com/uploadimg/movie/2018/12/24/2018122415452872766.jpg"
+      ]
+    },
+    {
+      "lid": 179314,
+      "name": "horror fans only !",
+      "username": "Lose_Fat_With_Matt9c2",
+      "count": 1000,
+      "imgArr": [
+        "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMTIvMjQvMjAxODEyMjQyMTI2MzM0MTExOS5qcGd8NTAwfDc0.png"
+      ],
+      "imgArr_min": [
+        "https://thumb.chuaxin.com/thumb_dXBsb2FkaW1nL21vdmllLzIwMTgvMTIvMjQvMjAxODEyMjQyMTI2MzM0MTExOS5qcGd8MzAwfDc0.png"
+      ],
+      "imgArr_org": [
+        "https://images.chuaxin.com/uploadimg/movie/2018/12/24/2018122421263341119.jpg"
+      ]
+    },
+    {
+      "lid": 212465,
+      "name": "THIS GAMER LIFE 🎮 2 New 19/04/26 ✔",
+      "username": "Badbren_Entertainment_",
+      "count": 542,
+      "imgArr": [
+        "https://thumb.chuaxin.com/thumb_cGxheWxpc3RzX2NvdmVyLzIvNS8yMTI0NjUvMjAyMzEwMjMxNDI1NTcuanBnfDUwMHw3NA__.png"
+      ],
+      "imgArr_min": [
+        "https://thumb.chuaxin.com/thumb_cGxheWxpc3RzX2NvdmVyLzIvNS8yMTI0NjUvMjAyMzEwMjMxNDI1NTcuanBnfDMwMHw3NA__.png"
+      ],
+      "imgArr_org": [
+        "https://images.chuaxin.com/playlists_cover/2/5/212465/20231023142557.jpg"
+      ]
+    },
+    {
+      "lid": 132619,
+      "name": "After Dark Films",
+      "username": "Horrorfest",
+      "count": 234,
+      "imgArr": [
+        "https://thumb.chuaxin.com/thumb_cGxheWxpc3RzX2NvdmVyLzEvOS8xMzI2MTkvMjAyMTA2MTgwMDQ4MzcuanBnfDUwMHw3NA__.png"
+      ],
+      "imgArr_min": [
+        "https://thumb.chuaxin.com/thumb_cGxheWxpc3RzX2NvdmVyLzEvOS8xMzI2MTkvMjAyMTA2MTgwMDQ4MzcuanBnfDMwMHw3NA__.png"
+      ],
+      "imgArr_org": [
+        "https://images.chuaxin.com/playlists_cover/1/9/132619/20210618004837.jpg"
+      ]
+    }
+  ],
+  "stream_links": [
+    {
+      "url": "https://uk1-as208.shegu.net/vip/p1/org_movie/7/4/5/4965/movie.4965.2006.original.175977.20190613100351.mp4?KEY1=be45oKQCnHnvTdlfTt4ezw&KEY2=1777799845&KEY3=1696859&KEY4=world&KEY5=Stay.Alive.2006.1080-80d.mp4&KEY7=febbox_video_quality_list_v3&KEY8=1696859",
+      "quality": "ORG",
+      "size": "4.8 GB",
+      "label": "Original Quality"
+    },
+    {
+      "url": "https://hls.shegu.net/38113.m3u8?sign=UgfW_4uFlI2SBMolkpIC7w&t=1777799845&quality=1080p&KEY7=febbox_video_quality_list_v4&KEY8=1696859&IP=102.68.16.43&platform=web",
+      "quality": "1080p",
+      "size": "1.76 GB",
+      "label": "1080pp"
+    },
+    {
+      "url": "https://hls.shegu.net/38113.m3u8?sign=UgfW_4uFlI2SBMolkpIC7w&t=1777799845&quality=720p&KEY7=febbox_video_quality_list_v4&KEY8=1696859&IP=102.68.16.43&platform=web",
+      "quality": "720p",
+      "size": "903 MB",
+      "label": "720pp"
+    },
+    {
+      "url": "https://hls.shegu.net/38113.m3u8?sign=UgfW_4uFlI2SBMolkpIC7w&t=1777799845&quality=360p&KEY7=febbox_video_quality_list_v4&KEY8=1696859&IP=102.68.16.43&platform=web",
+      "quality": "360p",
+      "size": "300 MB",
+      "label": "360pp"
+    }
+  ]
+}

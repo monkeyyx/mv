@@ -10,6 +10,8 @@ import mediaRoutes from "./routes/media";
 import febboxRoutes from "./routes/febbox";
 import discoverRoutes from "./routes/discover";
 
+import path from "path";
+
 // --- Initialization ---
 const app = express();
 const port = parseInt(config.API_PORT);
@@ -17,10 +19,9 @@ const port = parseInt(config.API_PORT);
 // --- Global Middleware ---
 app.use(cors());
 app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 
 // --- Scalar Documentation (Premium Theme) ---
-// Using 'any' for the config to bypass strict version-specific type mismatches
-// while ensuring the UI renders correctly.
 app.use(
   "/docs",
   apiReference({
@@ -30,6 +31,11 @@ app.use(
     showSidebar: true,
   } as any),
 );
+
+// Dashboard Route
+app.get("/test", (req, res) => {
+  res.sendFile(path.join(__dirname, "public/index.html"));
+});
 
 // Redirect root to docs
 app.get("/", (req, res) => {

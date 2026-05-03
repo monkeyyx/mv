@@ -70,7 +70,11 @@ export class ShowboxService {
     return data?.data || [];
   }
 
-  async search(keyword: string, type: string = "all"): Promise<Movie[]> {
+  async search(
+    keyword: string,
+    type: string = "all",
+    year?: string,
+  ): Promise<Movie[]> {
     const data = await this.request("Search5", {
       keyword,
       type,
@@ -78,7 +82,7 @@ export class ShowboxService {
       pagelimit: 20,
     });
 
-    return (data?.data || []).map((item: any) => ({
+    const results = (data?.data || []).map((item: any) => ({
       id: item.id,
       title: item.title,
       poster: item.poster,
@@ -86,6 +90,20 @@ export class ShowboxService {
       rating: item.imdb_rating,
       box_type: item.box_type,
     }));
+
+    if (year && results.length > 0) {
+      // Prioritize results that match the year
+      const yearMatch = results.find((r: any) => r.year?.toString() === year);
+      if (yearMatch) {
+        // Move match to the front
+        return [
+          yearMatch,
+          ...results.filter((r: any) => r.id !== yearMatch.id),
+        ];
+      }
+    }
+
+    return results;
   }
 
   async getMovieDetails(id: string): Promise<any> {
@@ -104,6 +122,7 @@ export class ShowboxService {
       poster: info.poster,
       year: info.year,
       rating: info.imdb_rating,
+      box_type: 2,
       seasons: (info.season || []).map((seasonNum: number) => ({
         season: seasonNum,
         episodes: (info.episode || [])
@@ -125,6 +144,7 @@ export class ShowboxService {
       const data = await response.json();
       return data?.data?.link?.split("/").pop() || null;
     } catch (e) {
+      console.error(`[Showbox] getFebBoxId failed for ${id}:`, e);
       return null;
     }
   }

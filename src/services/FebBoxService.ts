@@ -240,7 +240,7 @@ export class FebBoxService {
           url,
           quality,
           size,
-          label: quality === "ORG" ? "Original Quality" : `${quality}p`,
+          label: quality === "ORG" ? "Original Quality" : quality,
         });
       }
     });
