@@ -1,2 +1,7 @@
 node_modules
 .env
+.wrangler
+dist
+.env.secrets
+secrets_bulk.json
+set_secrets.sh

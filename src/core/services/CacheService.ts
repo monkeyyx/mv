@@ -1,4 +1,5 @@
 import type { KVNamespace } from "@cloudflare/workers-types";
+import { Redis } from "@upstash/redis/cloudflare";
 
 export interface ICacheService {
   get<T>(key: string): Promise<T | null>;
@@ -13,10 +14,12 @@ export interface CacheResult<T> {
 
 export class CacheService implements ICacheService {
   private kv?: KVNamespace;
+  private redis?: Redis;
   private localCache = new Map<string, { value: any; expires: number; swrExpires: number }>();
 
-  constructor(kvNamespace?: KVNamespace) {
+  constructor(kvNamespace?: KVNamespace, redis?: Redis) {
     this.kv = kvNamespace;
+    this.redis = redis;
   }
 
   /**
@@ -37,7 +40,28 @@ export class CacheService implements ICacheService {
       this.localCache.delete(key);
     }
 
-    // 2. Try KV if available
+    // 2. Try Redis First (Stronger consistency, faster TTL)
+    if (this.redis) {
+      try {
+        const data = await this.redis.get<{ value: T; expires: number; swrExpires: number }>(key);
+        if (data) {
+          const now = Date.now();
+          // Populate local cache
+          this.localCache.set(key, { 
+            value: data.value, 
+            expires: data.expires, 
+            swrExpires: data.swrExpires 
+          });
+
+          if (now < data.expires) return { value: data.value, isStale: false };
+          if (now < data.swrExpires) return { value: data.value, isStale: true };
+        }
+      } catch (e) {
+        console.error(`[CacheService] Redis Get Error for ${key}:`, e);
+      }
+    }
+
+    // 3. Try KV if available
     if (this.kv) {
       try {
         const { value, metadata } = await this.kv.getWithMetadata<{ expires: number; swrExpires: number }>(key, "json");
@@ -77,7 +101,18 @@ export class CacheService implements ICacheService {
     const expires = now + ttlSeconds * 1000;
     const swrExpires = now + (ttlSeconds + swrSeconds) * 1000;
 
-    // 1. Set in KV if available
+    // 1. Set in Redis if available (Primary)
+    if (this.redis) {
+      try {
+        await this.redis.set(key, { value, expires, swrExpires }, {
+          ex: Math.max(60, ttlSeconds + swrSeconds)
+        });
+      } catch (e) {
+        console.error(`[CacheService] Redis Set Error for ${key}:`, e);
+      }
+    }
+
+    // 2. Set in KV if available (Secondary)
     if (this.kv) {
       try {
         await this.kv.put(key, JSON.stringify(value), {
@@ -94,6 +129,9 @@ export class CacheService implements ICacheService {
   }
 
   async delete(key: string): Promise<void> {
+    if (this.redis) {
+      await this.redis.del(key);
+    }
     if (this.kv) {
       await this.kv.delete(key);
     }

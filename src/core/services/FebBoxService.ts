@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
 import type { FileItem, StreamSource } from "../types";
+import { Redis } from "@upstash/redis/cloudflare";
 
 interface FebBoxResponse {
   code?: number;
@@ -7,12 +8,17 @@ interface FebBoxResponse {
     file_list?: any[];
     list?: any;
     html?: string;
+    access_token?: string;
+    expires_in?: number;
   };
   html?: string;
+  access_token?: string;
+  expires_in?: number;
 }
 
 export class FebBoxService {
   private baseUrl = "https://www.febbox.com";
+  private apiUrl = "https://api.febbox.com";
   private headers = {
     "User-Agent":
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
@@ -20,73 +26,90 @@ export class FebBoxService {
   };
 
   public uiCookie: string | undefined = "";
-  private sessionDO: any; // DurableObjectNamespace
+  private redis?: Redis;
   private env: any;
 
-  constructor(sessionDO?: any, env?: any) {
-    this.sessionDO = sessionDO;
+  constructor(redis?: Redis, env?: any) {
+    this.redis = redis;
     this.env = env;
   }
 
-  private async getCookieFromDO(): Promise<string> {
-    if (!this.sessionDO) return this.uiCookie || "";
+  private async getAuthToken(): Promise<string> {
+    const redisKey = "febbox:access_token";
     
-    try {
-      const id = this.sessionDO.idFromName("global");
-      const stub = this.sessionDO.get(id);
-      const res = await stub.fetch("http://do/get");
-      let cookie = await res.text();
-
-      if (!cookie && this.env?.FEBBOX_EMAIL && this.env?.FEBBOX_PASSWORD) {
-        console.log("[FebBoxService] No cookie in DO, triggering refresh...");
-        const refreshRes = await stub.fetch("http://do/refresh", {
-          method: "POST",
-          body: JSON.stringify({
-            email: this.env.FEBBOX_EMAIL,
-            password: this.env.FEBBOX_PASSWORD
-          })
-        });
-        cookie = await refreshRes.text();
-      }
-
-      return cookie || this.uiCookie || "";
-    } catch (e) {
-      console.error("[FebBoxService] Error getting cookie from DO:", e);
-      return this.uiCookie || "";
+    // 1. Check Redis Cache
+    if (this.redis) {
+      const cached = await this.redis.get<string>(redisKey);
+      if (cached) return cached;
     }
+
+    // 2. Fallback to hardcoded UI cookie if provided (for local/manual)
+    if (this.uiCookie) return this.uiCookie;
+
+    // 3. Authenticate using Client ID / Secret if available
+    if (this.env?.FEBBOX_CLIENT_ID && this.env?.FEBBOX_CLIENT_SECRET) {
+      console.log("[FebBoxService] Authenticating with Client ID...");
+      try {
+        const res = await fetch(`${this.apiUrl}/oauth/token`, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: new URLSearchParams({
+            client_id: this.env.FEBBOX_CLIENT_ID,
+            client_secret: this.env.FEBBOX_CLIENT_SECRET,
+            grant_type: "client_credentials",
+          }),
+        });
+
+        const data = await res.json() as FebBoxResponse;
+        const token = data.access_token || data.data?.access_token;
+
+        if (token) {
+          if (this.redis) {
+            const ttl = (data.expires_in || 3600) - 60; // Buffer 1 min
+            await this.redis.set(redisKey, token, { ex: ttl });
+          }
+          return token;
+        }
+      } catch (e) {
+        console.error("[FebBoxService] Auth Error:", e);
+      }
+    }
+
+    return "";
   }
 
   private async fetchRaw(
     url: string,
     extraHeaders: Record<string, string> = {},
-    retryOn403: boolean = true
+    retryOnAuth: boolean = true
   ): Promise<Response> {
     try {
+      const token = await this.getAuthToken();
       const headers: Record<string, string> = {
         ...this.headers,
         ...extraHeaders,
       };
-      
-      const cookieValue = await this.getCookieFromDO();
-      if (cookieValue) {
-        headers["cookie"] = `ui=${cookieValue}`;
+
+      if (token) {
+        headers["cookie"] = `ui=${token}`;
       }
 
       const response = await fetch(url, { headers });
       
-      if (response.status === 403 && retryOn403 && this.sessionDO && this.env?.FEBBOX_EMAIL) {
-        console.warn(`[FebBoxService] 403 Forbidden for ${url}. Attempting DO refresh...`);
-        const id = this.sessionDO.idFromName("global");
-        const stub = this.sessionDO.get(id);
-        await stub.fetch("http://do/refresh", {
-          method: "POST",
-          body: JSON.stringify({
-            email: this.env.FEBBOX_EMAIL,
-            password: this.env.FEBBOX_PASSWORD
-          })
-        });
-        // Retry once with new cookie
-        return this.fetchRaw(url, extraHeaders, false);
+      // If we get a 500 or 403, and we have a manual UI_COOKIE that is different from the current token, retry with it
+      if ((response.status === 500 || response.status === 403 || response.status === 401) && retryOnAuth) {
+        const manualCookie = this.env?.FEBBOX_UI_COOKIE || this.uiCookie;
+        if (manualCookie && manualCookie !== token) {
+          console.warn(`[FebBoxService] Request failed with ${response.status}. Retrying with manual FEBBOX_UI_COOKIE...`);
+          const retryHeaders = { ...headers, "cookie": `ui=${manualCookie}` };
+          return await fetch(url, { headers: retryHeaders });
+        }
+
+        if (this.redis && token && response.status !== 500) {
+          console.warn(`[FebBoxService] Auth failed for ${url}. Clearing cache and retrying...`);
+          await this.redis.del("febbox:access_token");
+          return this.fetchRaw(url, extraHeaders, false);
+        }
       }
 
       if (!response.ok) {
@@ -109,6 +132,7 @@ export class FebBoxService {
       const response = await this.fetchRaw(url, {
         referer: `${this.baseUrl}/share/${shareKey}`,
       });
+      
       const data = await response.json() as FebBoxResponse;
       if (!data || !data.data) return [];
 
@@ -197,7 +221,15 @@ export class FebBoxService {
       }
       const response = await this.fetchRaw(url, headers);
       const data = await response.json() as FebBoxResponse;
-      return this.parseHtmlTable(data.html || "") as StreamSource[];
+      
+      const html = data.html || "";
+      const links = this.parseHtmlTable(html) as StreamSource[];
+      if (links.length === 0) {
+        console.warn(`[FebBoxService] No links found for FID ${fid}. HTML length: ${html.length}`);
+      } else {
+        console.log(`[FebBoxService] Found ${links.length} links for FID ${fid}`);
+      }
+      return links;
     } catch (error) {
       console.error(`[FebBox] Error in getLinks:`, error);
       return [];

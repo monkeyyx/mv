@@ -10,11 +10,13 @@ import febbox from "./routes/febbox";
 import discover from "./routes/discover";
 
 import { CacheService } from "../core/services/CacheService";
+import { Redis } from "@upstash/redis/cloudflare";
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
-// Persistent cache instance for local development
+// Persistent instances for local development
 let localCacheInstance: CacheService | null = null;
+let localRedisInstance: Redis | null = null;
 
 // --- Global Middleware ---
 app.use("*", cors());
@@ -29,11 +31,20 @@ app.use("*", async (c, next) => {
     }
   }
 
+  // Initialize Redis Service
+  if (!localRedisInstance && c.env.UPSTASH_REDIS_REST_URL) {
+    localRedisInstance = new Redis({
+      url: c.env.UPSTASH_REDIS_REST_URL,
+      token: c.env.UPSTASH_REDIS_REST_TOKEN,
+    });
+  }
+
   // Initialize Cache Service
   if (!localCacheInstance) {
-    localCacheInstance = new CacheService(c.env.MYFLIXI_CACHE);
+    localCacheInstance = new CacheService(c.env.MYFLIXI_CACHE, localRedisInstance || undefined);
   }
   c.set("cache", localCacheInstance);
+  if (localRedisInstance) (c as any).set("redis", localRedisInstance);
 
   // Validate environment variables using Zod
   try {
@@ -81,11 +92,10 @@ app.get("/openapi.json", (c) => {
 // --- Health Check ---
 app.get("/", (c) =>
   c.json({
-    message: "MyFlixi Edge API v2.3.0 (Durable Sessions)",
+    message: "MyFlixi Edge API v2.5.0 (Redis + KV Hybrid)",
     docs: "/docs",
     status: "online",
   }),
 );
 
-export { FebBoxSession } from "../core/services/FebBoxSession";
 export default app;

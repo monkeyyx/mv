@@ -8,6 +8,8 @@ export const envSchema = z.object({
   API_PORT: z.string().default("3000"),
   NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
   TMDB_API_KEY: z.string().min(1, "TMDB_API_KEY is required"),
+  UPSTASH_REDIS_REST_URL: z.string().optional(),
+  UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
 });
 
 export type Env = z.infer<typeof envSchema>;

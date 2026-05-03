@@ -13,7 +13,7 @@ describe("FebBoxService Unit Tests", () => {
     const shareKey = "m6k8v9"; // Example public share or use process.env
     const files = await febBoxService.getFileList(shareKey);
     expect(Array.isArray(files)).toBe(true);
-  });
+  }, 30000);
 
   it("should handle console file list (requires UI_COOKIE)", async () => {
     if (!febBoxService.uiCookie) {
@@ -22,5 +22,5 @@ describe("FebBoxService Unit Tests", () => {
     }
     const files = await febBoxService.getConsoleFileList();
     expect(Array.isArray(files)).toBe(true);
-  });
+  }, 30000);
 });

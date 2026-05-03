@@ -30,13 +30,13 @@ describe("🎬 Movie Pipeline — Ratatouille", () => {
     expect(movie.id).toBeTruthy();
     movieShowboxId = movie.id;
     console.log("🎬 Movie:", movie);
-  });
+  }, 20000);
 
   it("should resolve FebBox share ID for the movie", async () => {
     febBoxId = await showbox.getFebBoxId(movieShowboxId, "1");
     console.log("🔗 FebBox ID:", febBoxId);
     expect(febBoxId).toBeTruthy();
-  });
+  }, 20000);
 
   it("should list files in FebBox folder", async () => {
     if (!febBoxId) return;
@@ -57,7 +57,7 @@ describe("🎬 Movie Pipeline — Ratatouille", () => {
     console.log("🌐 Stream Links:", links);
     expect(links.length).toBeGreaterThan(0);
     expect(links[0].url).toBeTruthy();
-  });
+  }, 30000);
 });
 
 // ---------------------------------------------------------------------------
@@ -122,7 +122,7 @@ describe("📺 TV Show Pipeline — Breaking Bad", () => {
     console.log("🌐 Episode Links:", links);
     expect(links.length).toBeGreaterThan(0);
     expect(links[0].url).toContain("http");
-  });
+  }, 30000);
 });
 
 // ---------------------------------------------------------------------------
@@ -191,5 +191,5 @@ describe("🇯🇵 Anime Discovery Pipeline", () => {
 
     // At least some should be available — ShowBox has major anime
     expect(available.length).toBeGreaterThan(0);
-  });
+  }, 60000);
 });

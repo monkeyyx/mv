@@ -1,6 +1,6 @@
 name = "movie-edge-resolver"
 main = "src/worker.ts"
-compatibility_date = "2024-05-03"
+compatibility_date = "2026-05-03"
 compatibility_flags = ["nodejs_compat"]
 
 [vars]
@@ -11,14 +11,6 @@ ORIGIN_API = "https://your-api.com"
 binding = "MYFLIXI_CACHE"
 id = "xxxx" 
 preview_id = "xxxx"
-
-[[durable_objects.bindings]]
-name = "FEBBOX_SESSION"
-class_name = "FebBoxSession"
-
-[[migrations]]
-tag = "v1"
-new_classes = ["FebBoxSession"]
 
 [observability]
 enabled = true
