@@ -1,6 +1,7 @@
 name = "movie-edge-resolver"
-main = "src/worker/index.ts"
+main = "src/worker.ts"
 compatibility_date = "2024-05-03"
+compatibility_flags = ["nodejs_compat"]
 
 [vars]
 # You'll need to add your origin API URL here if you want the worker to fallback

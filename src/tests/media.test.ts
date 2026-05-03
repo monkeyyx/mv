@@ -1,20 +1,20 @@
-import request from "supertest";
-import { app } from "../index";
+import { expect, test, describe } from "bun:test";
+import app from "../api/index";
 
-describe("Media Routes", () => {
-  describe("GET /api/media/movie/:id", () => {
-    test("should return movie details with stream links", async () => {
-      const response = await request(app)
-        .get("/api/media/movie/24535")
-        .expect(200)
-        .expect("Content-Type", /json/);
+describe("Media Route Integration Tests", () => {
+  test("GET /api/media/movie/3737 should return Avatar details", async () => {
+    const res = await app.request("/api/media/movie/3737");
+    expect(res.status).toBe(200);
+    const body = await res.json() as any;
+    expect(body.title).toContain("Avatar");
+    expect(body.id).toBe("3737");
+  });
 
-      const body = response.body;
-
-      expect(body).toHaveProperty("id");
-      expect(body).toHaveProperty("title");
-      expect(body).toHaveProperty("stream_sources");
-      expect(Array.isArray(body.stream_sources)).toBe(true);
-    }, 30000);
+  test("GET /api/media/show/13 should return Avatar Show details", async () => {
+    const res = await app.request("/api/media/show/13");
+    expect(res.status).toBe(200);
+    const body = await res.json() as any;
+    expect(body.title).toContain("Avatar");
+    expect(Array.isArray(body.seasons)).toBe(true);
   });
 });
