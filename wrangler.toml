@@ -1,0 +1,15 @@
+name = "movie-edge-resolver"
+main = "src/worker/index.ts"
+compatibility_date = "2024-05-03"
+
+[vars]
+# You'll need to add your origin API URL here if you want the worker to fallback
+ORIGIN_API = "https://your-api.com"
+
+[[kv_namespaces]]
+binding = "MYFLIXI_CACHE"
+id = "xxxx" # Replace with real ID after wrangler kv:namespace create
+preview_id = "xxxx"
+
+[observability]
+enabled = true

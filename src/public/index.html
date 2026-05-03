@@ -173,8 +173,12 @@
     </header>
 
     <div class="search-container">
-        <input type="text" id="searchQuery" placeholder="Search movies or TV shows..." value="Avatar">
+        <input type="text" id="searchQuery" placeholder="Search movies or TV shows..." value="Interstellar">
         <button onclick="search()">Search</button>
+        <div style="display: flex; align-items: center; gap: 10px; margin-left: 20px;">
+            <input type="checkbox" id="useEdge" style="width: auto;">
+            <label for="useEdge" style="font-weight: 600; color: var(--accent);">Cloudflare Edge</label>
+        </div>
     </div>
 
     <div class="grid" id="results">
@@ -212,7 +216,7 @@
                                 <span class="rating">★ ${item.rating || '0.0'}</span>
                             </div>
                             <div class="title">${item.title}</div>
-                            <button class="btn-resolve" onclick="resolve('${item.id}', '${item.box_type}')">
+                            <button class="btn-resolve" onclick="resolve('${item.id}', '${item.box_type}', '${item.title}', '${item.year}')">
                                 Resolve HLS Stream
                             </button>
                         </div>
@@ -224,21 +228,30 @@
             }
         }
 
-        async function resolve(id, type) {
+        async function resolve(id, type, title, year) {
+            const useEdge = document.getElementById('useEdge').checked;
             const modal = document.getElementById('modal');
             const modalBody = document.getElementById('modalBody');
             const modalTitle = document.getElementById('modalTitle');
             
             modalTitle.innerText = "Resolving...";
-            modalBody.innerHTML = '<div class="loading">Active HLS Hunting in progress...</div>';
+            modalBody.innerHTML = `<div class="loading">Active HLS Hunting in progress... <br><small>${useEdge ? 'Using Cloudflare Edge (8787)' : 'Using Origin API (3000)'}</small></div>`;
             modal.style.display = 'flex';
 
             try {
-                const endpoint = type === '2' ? `/api/media/show/${id}` : `/api/media/movie/${id}`;
-                const res = await fetch(endpoint);
-                const data = await res.json();
+                let data;
+                if (useEdge && type !== '2') {
+                    // Use Cloudflare Worker for Movies
+                    const res = await fetch(`http://localhost:8787/resolve/movie?title=${encodeURIComponent(title)}&year=${year}`);
+                    data = await res.json();
+                } else {
+                    // Use Origin API
+                    const endpoint = type === '2' ? `/api/media/show/${id}` : `/api/media/movie/${id}`;
+                    const res = await fetch(endpoint);
+                    data = await res.json();
+                }
 
-                modalTitle.innerText = data.title;
+                modalTitle.innerText = data.title || title;
                 
                 if (type === '2') {
                     // Show episode list
@@ -261,6 +274,7 @@
                             <span class="badge ${data.real_stream_link ? 'badge-hls' : 'badge-missing'}">
                                 ${data.real_stream_link ? 'HLS FOUND' : 'NO HLS FOUND'}
                             </span>
+                            ${useEdge ? '<span class="badge" style="background: #f38020; margin-left: 10px;">EDGE CACHED</span>' : ''}
                         </div>
                     `;
 
@@ -278,7 +292,7 @@
                         html += `
                             <div class="stream-item">
                                 <span>${src.label} (${src.quality})</span>
-                                <span class="badge" style="background: ${src.is_hls ? '#10b981' : '#64748b'}">${src.is_hls ? 'HLS' : 'ORG'}</span>
+                                <span class="badge" style="background: ${src.is_hls || src.url?.includes('.m3u8') ? '#10b981' : '#64748b'}">${src.is_hls || src.url?.includes('.m3u8') ? 'HLS' : 'ORG'}</span>
                             </div>
                         `;
                     });
@@ -290,11 +304,13 @@
         }
 
         async function resolveEpisode(fid) {
+            const useEdge = document.getElementById('useEdge').checked;
             const modalBody = document.getElementById('modalBody');
             modalBody.innerHTML = '<div class="loading">Hunting Episode HLS...</div>';
 
             try {
-                const res = await fetch(`/api/febbox/watch/${fid}`);
+                const endpoint = useEdge ? `http://localhost:8787/resolve/${fid}` : `/api/febbox/watch/${fid}`;
+                const res = await fetch(endpoint);
                 const data = await res.json();
 
                 let html = `
